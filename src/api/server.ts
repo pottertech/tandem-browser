@@ -14,6 +14,9 @@ import { VoiceManager } from '../voice/recognition';
 import { BehaviorObserver } from '../behavior/observer';
 import { humanizedClick, humanizedType } from '../input/humanized';
 import { ConfigManager } from '../config/manager';
+import { SiteMemoryManager } from '../memory/site-memory';
+import { WatchManager } from '../watch/watcher';
+import { HeadlessManager } from '../headless/manager';
 
 export class TandemAPI {
   private app: express.Application;
@@ -27,8 +30,11 @@ export class TandemAPI {
   private voiceManager: VoiceManager;
   private behaviorObserver: BehaviorObserver;
   private configManager: ConfigManager;
+  private siteMemory: SiteMemoryManager;
+  private watchManager: WatchManager;
+  private headlessManager: HeadlessManager;
 
-  constructor(win: BrowserWindow, port: number = 8765, tabManager: TabManager, panelManager: PanelManager, drawManager: DrawOverlayManager, activityTracker: ActivityTracker, voiceManager: VoiceManager, behaviorObserver: BehaviorObserver, configManager: ConfigManager) {
+  constructor(win: BrowserWindow, port: number = 8765, tabManager: TabManager, panelManager: PanelManager, drawManager: DrawOverlayManager, activityTracker: ActivityTracker, voiceManager: VoiceManager, behaviorObserver: BehaviorObserver, configManager: ConfigManager, siteMemory: SiteMemoryManager, watchManager: WatchManager, headlessManager: HeadlessManager) {
     this.win = win;
     this.port = port;
     this.tabManager = tabManager;
@@ -38,6 +44,9 @@ export class TandemAPI {
     this.voiceManager = voiceManager;
     this.behaviorObserver = behaviorObserver;
     this.configManager = configManager;
+    this.siteMemory = siteMemory;
+    this.watchManager = watchManager;
+    this.headlessManager = headlessManager;
     this.app = express();
     this.app.use(cors());
     this.app.use(express.json());
@@ -645,6 +654,157 @@ export class TandemAPI {
         res.status(500).json({ error: e.message });
       }
     });
+
+    // ═══════════════════════════════════════════════
+    // SITE MEMORY — Phase 3.1
+    // ═══════════════════════════════════════════════
+
+    this.app.get('/memory/sites', (_req: Request, res: Response) => {
+      try {
+        const sites = this.siteMemory.listSites();
+        res.json({ sites });
+      } catch (e: any) {
+        res.status(500).json({ error: e.message });
+      }
+    });
+
+    this.app.get('/memory/site/:domain', (req: Request, res: Response) => {
+      try {
+        const data = this.siteMemory.getSite(req.params.domain as string);
+        if (!data) { res.status(404).json({ error: 'Site not found' }); return; }
+        res.json(data);
+      } catch (e: any) {
+        res.status(500).json({ error: e.message });
+      }
+    });
+
+    this.app.get('/memory/site/:domain/diff', (req: Request, res: Response) => {
+      try {
+        const diffs = this.siteMemory.getDiffs(req.params.domain as string);
+        res.json({ diffs });
+      } catch (e: any) {
+        res.status(500).json({ error: e.message });
+      }
+    });
+
+    this.app.get('/memory/search', (req: Request, res: Response) => {
+      try {
+        const q = req.query.q as string;
+        if (!q) { res.status(400).json({ error: 'q parameter required' }); return; }
+        const results = this.siteMemory.search(q);
+        res.json({ results });
+      } catch (e: any) {
+        res.status(500).json({ error: e.message });
+      }
+    });
+
+    // ═══════════════════════════════════════════════
+    // WATCH — Phase 3.2
+    // ═══════════════════════════════════════════════
+
+    this.app.post('/watch/add', (req: Request, res: Response) => {
+      try {
+        const { url, intervalMinutes = 30 } = req.body;
+        if (!url) { res.status(400).json({ error: 'url required' }); return; }
+        const result = this.watchManager.addWatch(url, intervalMinutes);
+        if ('error' in result) { res.status(400).json(result); return; }
+        res.json({ ok: true, watch: result });
+      } catch (e: any) {
+        res.status(500).json({ error: e.message });
+      }
+    });
+
+    this.app.get('/watch/list', (_req: Request, res: Response) => {
+      try {
+        const watches = this.watchManager.listWatches();
+        res.json({ watches });
+      } catch (e: any) {
+        res.status(500).json({ error: e.message });
+      }
+    });
+
+    this.app.delete('/watch/remove', (req: Request, res: Response) => {
+      try {
+        const { url, id } = req.body;
+        const removed = this.watchManager.removeWatch(id || url);
+        res.json({ ok: removed });
+      } catch (e: any) {
+        res.status(500).json({ error: e.message });
+      }
+    });
+
+    this.app.post('/watch/check', async (req: Request, res: Response) => {
+      try {
+        const { url, id } = req.body;
+        const results = await this.watchManager.forceCheck(id || url);
+        res.json(results);
+      } catch (e: any) {
+        res.status(500).json({ error: e.message });
+      }
+    });
+
+    // ═══════════════════════════════════════════════
+    // HEADLESS — Phase 3.3
+    // ═══════════════════════════════════════════════
+
+    this.app.post('/headless/open', async (req: Request, res: Response) => {
+      try {
+        const { url } = req.body;
+        if (!url) { res.status(400).json({ error: 'url required' }); return; }
+        const result = await this.headlessManager.open(url);
+        res.json(result);
+      } catch (e: any) {
+        res.status(500).json({ error: e.message });
+      }
+    });
+
+    this.app.get('/headless/content', async (_req: Request, res: Response) => {
+      try {
+        const result = await this.headlessManager.getContent();
+        res.json(result);
+      } catch (e: any) {
+        res.status(500).json({ error: e.message });
+      }
+    });
+
+    this.app.get('/headless/status', (_req: Request, res: Response) => {
+      try {
+        res.json(this.headlessManager.getStatus());
+      } catch (e: any) {
+        res.status(500).json({ error: e.message });
+      }
+    });
+
+    this.app.post('/headless/show', (_req: Request, res: Response) => {
+      try {
+        const shown = this.headlessManager.show();
+        res.json({ ok: shown });
+      } catch (e: any) {
+        res.status(500).json({ error: e.message });
+      }
+    });
+
+    this.app.post('/headless/hide', (_req: Request, res: Response) => {
+      try {
+        const hidden = this.headlessManager.hide();
+        res.json({ ok: hidden });
+      } catch (e: any) {
+        res.status(500).json({ error: e.message });
+      }
+    });
+
+    this.app.post('/headless/close', (_req: Request, res: Response) => {
+      try {
+        this.headlessManager.close();
+        res.json({ ok: true });
+      } catch (e: any) {
+        res.status(500).json({ error: e.message });
+      }
+    });
+
+    // ═══════════════════════════════════════════════
+    // DATA — Export, Import, Wipe
+    // ═══════════════════════════════════════════════
 
     this.app.post('/data/wipe', (_req: Request, res: Response) => {
       try {

@@ -2,6 +2,32 @@
 
 ## [Unreleased] — 2026-02-11
 
+### 🧠 Phase 3.1 — Site Memory
+- New `SiteMemoryManager` class (`src/memory/site-memory.ts`)
+- Auto-extract page data on every visit: title, URL, meta description, headings, forms/links count, text preview (500 chars)
+- Storage in `~/.tandem/site-memory/{domain}.json` — max 100 visits, 50 diffs per domain
+- Diff detection: compares with previous visit, tracks new/removed headings, title/description changes, link/form count deltas
+- Visit time tracking: records total time spent per domain
+- API endpoints: `GET /memory/sites`, `GET /memory/site/:domain`, `GET /memory/site/:domain/diff`, `GET /memory/search?q=...`
+- Full-text search across all site memories
+
+### 👁️ Phase 3.2 — Scheduled Watches
+- New `WatchManager` class (`src/watch/watcher.ts`)
+- Background page monitoring via hidden BrowserWindow with stealth patches
+- SHA-256 hash-based change detection on page text content
+- macOS notification + copilot alert when changes detected
+- Persistent watch list in `~/.tandem/watches.json` (survives restart)
+- Max 20 watches to prevent overload
+- API endpoints: `POST /watch/add`, `GET /watch/list`, `DELETE /watch/remove`, `POST /watch/check`
+
+### 🕶️ Phase 3.3 — Headless Mode
+- New `HeadlessManager` class (`src/headless/manager.ts`)
+- Hidden BrowserWindow (show: false) for Kees to browse independently
+- Same `persist:tandem` partition (shared cookies) + same stealth patches
+- Captcha detection: checks for reCAPTCHA, hCaptcha, Cloudflare challenge selectors every 3s
+- Auto-show + copilot alert on: captcha detected, login redirect, page crash
+- API endpoints: `POST /headless/open`, `GET /headless/content`, `GET /headless/status`, `POST /headless/show`, `POST /headless/hide`, `POST /headless/close`
+
 ### ⚙️ Phase 2.8 — Settings/Config Scherm
 - New `ConfigManager` class (`src/config/manager.ts`) — manages `~/.tandem/config.json`
 - Settings page (`shell/settings.html`) with dark theme matching Tandem

@@ -147,27 +147,31 @@
 ## Phase 3: Kees' Brein 🧠
 > Dit maakt Kees slim. Niet alleen meekijken maar onthouden, begrijpen, en zelfstandig handelen.
 
-### 3.1 Site Memory — Geheugen per website
-- [ ] `~/.tandem/site-memory/{domain}.json` — structured data per site
-- [ ] Auto-extract bij bezoek: titel, meta, key content, forms, accounts
-- [ ] Diff detectie: wat is veranderd sinds vorige keer?
-- [ ] API: `GET /memory/{domain}`, `GET /memory/diff/{domain}`
-- [ ] Doorzoekbaar: `GET /memory/search?q=...`
+### 3.1 Site Memory — Geheugen per website ✅ DONE
+- [x] `~/.tandem/site-memory/{domain}.json` — structured data per site
+- [x] Auto-extract bij bezoek: titel, meta, key content, forms, links, text preview
+- [x] Diff detectie: wat is veranderd sinds vorige keer?
+- [x] API: `GET /memory/sites`, `GET /memory/site/{domain}`, `GET /memory/site/{domain}/diff`
+- [x] Doorzoekbaar: `GET /memory/search?q=...`
+- [x] Track: eerste bezoek, laatste bezoek, aantal bezoeken, totale tijd
 
-### 3.2 Scheduled Watches — Ogen die altijd aan staan
-- [ ] Watch list: URLs + check interval + change detection
-- [ ] Background tabs (headless, Robin ziet ze niet)
-- [ ] Notificatie als er iets veranderd is
+### 3.2 Scheduled Watches — Ogen die altijd aan staan ✅ DONE
+- [x] Watch list: URLs + check interval + change detection (SHA-256 hash)
+- [x] Background checking via verborgen BrowserWindow (niet zichtbaar voor Robin)
+- [x] Notificatie bij verandering (macOS notificatie + copilot alert)
+- [x] Max 20 watches (voorkom overload)
+- [x] API: `POST /watch/add`, `GET /watch/list`, `DELETE /watch/remove`, `POST /watch/check`
 - [ ] Cron integratie: "check LinkedIn elke ochtend om 9:00"
-- [ ] API: `POST /watch/add`, `GET /watch/list`, `DELETE /watch/remove`
 - [ ] Configureerbaar: wat telt als "veranderd"? (text diff, element, screenshot diff)
 
-### 3.3 Headless Mode — Kees browst solo
-- [ ] Tweede webview (verborgen) voor background browsing
-- [ ] Kees kan zelfstandig pagina's openen, lezen, navigeren
-- [ ] Resultaten verschijnen in Kees paneel
-- [ ] Robin kan headless tab "zichtbaar" maken als hij wil meekijken
-- [ ] API: `POST /headless/open`, `GET /headless/content`
+### 3.3 Headless Mode — Kees browst solo ✅ DONE
+- [x] Verborgen BrowserWindow (show: false) voor background browsing
+- [x] Dezelfde stealth patches als main window
+- [x] Dezelfde persist:tandem partition (cookies gedeeld)
+- [x] Captcha detectie → auto-show + copilot alert
+- [x] Login redirect detectie → auto-show + alert
+- [x] Robin kan headless tab "zichtbaar" maken / verbergen
+- [x] API: `POST /headless/open`, `GET /headless/content`, `GET /headless/status`, `POST /headless/show`, `POST /headless/hide`, `POST /headless/close`
 
 ### 3.4 Form Memory — Alle formulieren onthouden
 - [ ] Track elke form submit: welke velden, welke waarden

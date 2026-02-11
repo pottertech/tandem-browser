@@ -11,6 +11,9 @@ import { ActivityTracker } from './activity/tracker';
 import { VoiceManager } from './voice/recognition';
 import { BehaviorObserver } from './behavior/observer';
 import { ConfigManager } from './config/manager';
+import { SiteMemoryManager } from './memory/site-memory';
+import { WatchManager } from './watch/watcher';
+import { HeadlessManager } from './headless/manager';
 
 const IS_DEV = process.argv.includes('--dev');
 const API_PORT = 8765;
@@ -24,6 +27,9 @@ let activityTracker: ActivityTracker | null = null;
 let voiceManager: VoiceManager | null = null;
 let behaviorObserver: BehaviorObserver | null = null;
 let configManager: ConfigManager | null = null;
+let siteMemory: SiteMemoryManager | null = null;
+let watchManager: WatchManager | null = null;
+let headlessManager: HeadlessManager | null = null;
 
 async function createWindow(): Promise<BrowserWindow> {
   const partition = 'persist:tandem';
@@ -68,7 +74,10 @@ async function startAPI(win: BrowserWindow): Promise<void> {
   activityTracker = new ActivityTracker(win, panelManager, drawManager);
   voiceManager = new VoiceManager(win, panelManager);
   behaviorObserver = new BehaviorObserver(win);
-  api = new TandemAPI(win, API_PORT, tabManager, panelManager, drawManager, activityTracker, voiceManager, behaviorObserver, configManager);
+  siteMemory = new SiteMemoryManager();
+  watchManager = new WatchManager();
+  headlessManager = new HeadlessManager();
+  api = new TandemAPI(win, API_PORT, tabManager, panelManager, drawManager, activityTracker, voiceManager, behaviorObserver, configManager, siteMemory, watchManager, headlessManager);
   await api.start();
   console.log(`🧠 Tandem API running on http://localhost:${API_PORT}`);
 
@@ -140,6 +149,21 @@ async function startAPI(win: BrowserWindow): Promise<void> {
     // Also record in behavioral observer
     if (behaviorObserver && data.type === 'did-navigate' && data.url) {
       behaviorObserver.recordNavigation(data.url, data.tabId);
+    }
+    // Record site memory on page load completion
+    if (siteMemory && data.type === 'did-finish-load' && data.url) {
+      const activeTab = tabManager?.getActiveTab();
+      if (activeTab) {
+        tabManager?.getActiveWebContents().then(wc => {
+          if (wc) siteMemory!.recordVisit(wc, data.url!).catch(() => {});
+        }).catch(() => {});
+      }
+    }
+    // Track visit end when navigating away
+    if (siteMemory && data.type === 'did-start-navigation' && data.url) {
+      // End tracking for previous URL
+      const activeTab = tabManager?.getActiveTab();
+      if (activeTab?.url) siteMemory.trackVisitEnd(activeTab.url);
     }
   });
 
@@ -237,6 +261,8 @@ app.whenReady().then(async () => {
 app.on('window-all-closed', () => {
   globalShortcut.unregisterAll();
   if (behaviorObserver) behaviorObserver.destroy();
+  if (watchManager) watchManager.destroy();
+  if (headlessManager) headlessManager.destroy();
   if (process.platform !== 'darwin') {
     app.quit();
   }

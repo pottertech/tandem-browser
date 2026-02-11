@@ -337,8 +337,14 @@
       align-items: flex-start;
     }
     .activity-item .a-icon { flex-shrink: 0; }
+    .activity-item .a-source { flex-shrink: 0; font-size: 10px; }
+    .activity-item .a-source.robin { color: var(--success); }
+    .activity-item .a-source.kees { color: var(--accent); }
     .activity-item .a-text { flex: 1; word-break: break-word; }
     .activity-item .a-time { flex-shrink: 0; opacity: 0.5; font-size: 10px; }
+
+    /* Tab source indicator */
+    .tab .tab-source { font-size: 10px; flex-shrink: 0; margin-right: 2px; }
 
     /* Chat */
     .chat-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding-bottom: 8px; }
@@ -448,22 +454,34 @@
       40% { transform: translateY(-4px); }
     }
 
-    /* Screenshots section */
+    /* Screenshots section — grid layout */
     .screenshot-preview {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .screenshot-preview .ss-item {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 4px;
     }
     .screenshot-preview img {
       width: 100%;
+      aspect-ratio: 16/10;
+      object-fit: cover;
       border-radius: 6px;
       border: 1px solid rgba(255,255,255,0.08);
       cursor: pointer;
+      transition: border-color 0.15s;
     }
+    .screenshot-preview img:hover { border-color: var(--accent); }
     .screenshot-preview .ss-label {
-      font-size: 10px;
+      font-size: 9px;
       color: var(--text-dim);
       text-align: center;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     /* ═══ Copilot overlay ═══ */
@@ -626,6 +644,7 @@
         tabEl.className = 'tab';
         tabEl.dataset.tabId = tabId;
         tabEl.innerHTML = `
+          <span class="tab-source" title="Robin controlled">👤</span>
           <span class="group-dot" style="display:none"></span>
           <img class="tab-favicon" src="" style="display:none">
           <span class="tab-title">New Tab</span>
@@ -751,6 +770,7 @@
       tabEl.className = 'tab active';
       tabEl.dataset.tabId = '__initial';
       tabEl.innerHTML = `
+        <span class="tab-source" title="Robin controlled">👤</span>
         <span class="group-dot" style="display:none"></span>
         <img class="tab-favicon" src="" style="display:none">
         <span class="tab-title">Nieuwe Tab</span>
@@ -964,9 +984,11 @@
         else if (event.data.selector) text = `${event.type}: ${event.data.selector}`;
         else if (event.data.title) text = `${event.type}: ${event.data.title}`;
 
+        const source = event.data.source || 'robin';
+        const sourceEmoji = source === 'kees' ? '🧀' : '👤';
         const item = document.createElement('div');
         item.className = 'activity-item';
-        item.innerHTML = `<span class="a-icon">${icon}</span><span class="a-text">${text}</span><span class="a-time">${time}</span>`;
+        item.innerHTML = `<span class="a-icon">${icon}</span><span class="a-source ${source}">${sourceEmoji}</span><span class="a-text">${text}</span><span class="a-time">${time}</span>`;
         activityEl.appendChild(item);
         activityEl.scrollTop = activityEl.scrollHeight;
         // Keep max 200 items
@@ -998,6 +1020,19 @@
           el.classList.add('active');
         } else {
           el.classList.remove('active');
+        }
+      });
+
+      // Tab source changes (🧀/👤 indicator)
+      window.tandem.onTabSourceChanged((data) => {
+        for (const [id, entry] of tabs) {
+          if (id === data.tabId) {
+            const sourceEl = entry.tabEl.querySelector('.tab-source');
+            if (sourceEl) {
+              sourceEl.textContent = data.source === 'kees' ? '🧀' : '👤';
+              sourceEl.title = data.source === 'kees' ? 'Kees controlled' : 'Robin controlled';
+            }
+          }
         }
       });
 
@@ -1547,10 +1582,11 @@
         if (placeholder) placeholder.remove();
 
         const div = document.createElement('div');
+        div.className = 'ss-item';
         if (data.base64) {
           const imgSrc = `data:image/png;base64,${data.base64}`;
           div.innerHTML = `
-            <img src="${imgSrc}" alt="${data.filename}" style="width:100%;border-radius:6px;border:1px solid rgba(255,255,255,0.08);cursor:pointer;margin-bottom:4px;" title="Klik om te vergroten">
+            <img src="${imgSrc}" alt="${data.filename}" title="Klik om te vergroten">
             <div class="ss-label">${data.filename}</div>
           `;
           div.querySelector('img').addEventListener('click', () => {

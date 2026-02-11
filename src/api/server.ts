@@ -19,6 +19,8 @@ import { WatchManager } from '../watch/watcher';
 import { HeadlessManager } from '../headless/manager';
 import { FormMemoryManager } from '../memory/form-memory';
 import { ContextBridge } from '../bridge/context-bridge';
+import { PiPManager } from '../pip/manager';
+import { NetworkInspector } from '../network/inspector';
 
 export class TandemAPI {
   private app: express.Application;
@@ -37,8 +39,10 @@ export class TandemAPI {
   private headlessManager: HeadlessManager;
   private formMemory: FormMemoryManager;
   private contextBridge: ContextBridge;
+  private pipManager: PiPManager;
+  private networkInspector: NetworkInspector;
 
-  constructor(win: BrowserWindow, port: number = 8765, tabManager: TabManager, panelManager: PanelManager, drawManager: DrawOverlayManager, activityTracker: ActivityTracker, voiceManager: VoiceManager, behaviorObserver: BehaviorObserver, configManager: ConfigManager, siteMemory: SiteMemoryManager, watchManager: WatchManager, headlessManager: HeadlessManager, formMemory: FormMemoryManager, contextBridge: ContextBridge) {
+  constructor(win: BrowserWindow, port: number = 8765, tabManager: TabManager, panelManager: PanelManager, drawManager: DrawOverlayManager, activityTracker: ActivityTracker, voiceManager: VoiceManager, behaviorObserver: BehaviorObserver, configManager: ConfigManager, siteMemory: SiteMemoryManager, watchManager: WatchManager, headlessManager: HeadlessManager, formMemory: FormMemoryManager, contextBridge: ContextBridge, pipManager: PiPManager, networkInspector: NetworkInspector) {
     this.win = win;
     this.port = port;
     this.tabManager = tabManager;
@@ -53,6 +57,8 @@ export class TandemAPI {
     this.headlessManager = headlessManager;
     this.formMemory = formMemory;
     this.contextBridge = contextBridge;
+    this.pipManager = pipManager;
+    this.networkInspector = networkInspector;
     this.app = express();
     this.app.use(cors());
     this.app.use(express.json());
@@ -922,6 +928,70 @@ export class TandemAPI {
         if (source !== 'robin' && source !== 'kees') { res.status(400).json({ error: 'source must be robin or kees' }); return; }
         const ok = this.tabManager.setTabSource(tabId, source);
         res.json({ ok });
+      } catch (e: any) {
+        res.status(500).json({ error: e.message });
+      }
+    });
+
+    // ═══════════════════════════════════════════════
+    // PIP — Phase 3.7
+    // ═══════════════════════════════════════════════
+
+    this.app.post('/pip/toggle', (req: Request, res: Response) => {
+      try {
+        const { open } = req.body;
+        const visible = this.pipManager.toggle(open);
+        res.json({ ok: true, visible });
+      } catch (e: any) {
+        res.status(500).json({ error: e.message });
+      }
+    });
+
+    this.app.get('/pip/status', (_req: Request, res: Response) => {
+      try {
+        res.json(this.pipManager.getStatus());
+      } catch (e: any) {
+        res.status(500).json({ error: e.message });
+      }
+    });
+
+    // ═══════════════════════════════════════════════
+    // NETWORK INSPECTOR — Phase 3.8
+    // ═══════════════════════════════════════════════
+
+    this.app.get('/network/log', (req: Request, res: Response) => {
+      try {
+        const limit = parseInt(req.query.limit as string) || 100;
+        const domain = req.query.domain as string | undefined;
+        const entries = this.networkInspector.getLog(limit, domain);
+        res.json({ entries, count: entries.length });
+      } catch (e: any) {
+        res.status(500).json({ error: e.message });
+      }
+    });
+
+    this.app.get('/network/apis', (_req: Request, res: Response) => {
+      try {
+        const apis = this.networkInspector.getApis();
+        res.json({ apis });
+      } catch (e: any) {
+        res.status(500).json({ error: e.message });
+      }
+    });
+
+    this.app.get('/network/domains', (_req: Request, res: Response) => {
+      try {
+        const domains = this.networkInspector.getDomains();
+        res.json({ domains });
+      } catch (e: any) {
+        res.status(500).json({ error: e.message });
+      }
+    });
+
+    this.app.delete('/network/clear', (_req: Request, res: Response) => {
+      try {
+        this.networkInspector.clear();
+        res.json({ ok: true });
       } catch (e: any) {
         res.status(500).json({ error: e.message });
       }

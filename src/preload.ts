@@ -94,4 +94,9 @@ contextBridge.exposeInMainWorld('tandem', {
   onKeesTyping: (callback: (data: { typing: boolean }) => void) => {
     ipcRenderer.on('kees-typing', (_event, data) => callback(data));
   },
+
+  // Tab source changes (robin/kees control indicator)
+  onTabSourceChanged: (callback: (data: { tabId: string; source: string }) => void) => {
+    ipcRenderer.on('tab-source-changed', (_event, data) => callback(data));
+  },
 });

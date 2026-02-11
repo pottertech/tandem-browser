@@ -16,6 +16,8 @@ import { WatchManager } from './watch/watcher';
 import { HeadlessManager } from './headless/manager';
 import { FormMemoryManager } from './memory/form-memory';
 import { ContextBridge } from './bridge/context-bridge';
+import { PiPManager } from './pip/manager';
+import { NetworkInspector } from './network/inspector';
 
 const IS_DEV = process.argv.includes('--dev');
 const API_PORT = 8765;
@@ -34,6 +36,8 @@ let watchManager: WatchManager | null = null;
 let headlessManager: HeadlessManager | null = null;
 let formMemory: FormMemoryManager | null = null;
 let contextBridge: ContextBridge | null = null;
+let pipManager: PiPManager | null = null;
+let networkInspector: NetworkInspector | null = null;
 
 async function createWindow(): Promise<BrowserWindow> {
   const partition = 'persist:tandem';
@@ -83,7 +87,9 @@ async function startAPI(win: BrowserWindow): Promise<void> {
   headlessManager = new HeadlessManager();
   formMemory = new FormMemoryManager();
   contextBridge = new ContextBridge();
-  api = new TandemAPI(win, API_PORT, tabManager, panelManager, drawManager, activityTracker, voiceManager, behaviorObserver, configManager, siteMemory, watchManager, headlessManager, formMemory, contextBridge);
+  pipManager = new PiPManager();
+  networkInspector = new NetworkInspector();
+  api = new TandemAPI(win, API_PORT, tabManager, panelManager, drawManager, activityTracker, voiceManager, behaviorObserver, configManager, siteMemory, watchManager, headlessManager, formMemory, contextBridge, pipManager, networkInspector);
   await api.start();
   console.log(`🧠 Tandem API running on http://localhost:${API_PORT}`);
 
@@ -164,6 +170,16 @@ async function startAPI(win: BrowserWindow): Promise<void> {
           if (wc) siteMemory!.recordVisit(wc, data.url!).catch(() => {});
         }).catch(() => {});
       }
+    }
+    // Flush network data when navigating away
+    if (networkInspector && data.type === 'did-start-navigation' && data.url) {
+      try {
+        const prevTab = tabManager?.getActiveTab();
+        if (prevTab?.url) {
+          const prevDomain = new URL(prevTab.url).hostname;
+          if (prevDomain) networkInspector.flushDomain(prevDomain);
+        }
+      } catch { /* ignore */ }
     }
     // Track visit end when navigating away
     if (siteMemory && data.type === 'did-start-navigation' && data.url) {
@@ -256,6 +272,11 @@ function registerShortcuts(): void {
     mainWindow?.webContents.send('shortcut', 'quick-screenshot');
   });
 
+  // Cmd+P — toggle PiP
+  globalShortcut.register('CommandOrControl+P', () => {
+    pipManager?.toggle();
+  });
+
   // Cmd+, — open settings
   globalShortcut.register('CommandOrControl+,', () => {
     mainWindow?.webContents.send('shortcut', 'open-settings');
@@ -297,6 +318,8 @@ app.on('window-all-closed', () => {
   if (behaviorObserver) behaviorObserver.destroy();
   if (watchManager) watchManager.destroy();
   if (headlessManager) headlessManager.destroy();
+  if (pipManager) pipManager.destroy();
+  if (networkInspector) networkInspector.destroy();
   if (process.platform !== 'darwin') {
     app.quit();
   }

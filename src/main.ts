@@ -3,6 +3,8 @@ import path from 'path';
 import { TandemAPI } from './api/server';
 import { StealthManager } from './stealth/manager';
 import { TabManager } from './tabs/manager';
+import { PanelManager } from './panel/manager';
+import { DrawOverlayManager } from './draw/overlay';
 
 const IS_DEV = process.argv.includes('--dev');
 const API_PORT = 8765;
@@ -10,6 +12,8 @@ const API_PORT = 8765;
 let mainWindow: BrowserWindow | null = null;
 let api: TandemAPI | null = null;
 let tabManager: TabManager | null = null;
+let panelManager: PanelManager | null = null;
+let drawManager: DrawOverlayManager | null = null;
 
 async function createWindow(): Promise<BrowserWindow> {
   const partition = 'persist:tandem';
@@ -47,7 +51,9 @@ async function createWindow(): Promise<BrowserWindow> {
 
 async function startAPI(win: BrowserWindow): Promise<void> {
   tabManager = new TabManager(win);
-  api = new TandemAPI(win, API_PORT, tabManager);
+  panelManager = new PanelManager(win);
+  drawManager = new DrawOverlayManager(win);
+  api = new TandemAPI(win, API_PORT, tabManager, panelManager, drawManager);
   await api.start();
   console.log(`🧠 Tandem API running on http://localhost:${API_PORT}`);
 
@@ -96,6 +102,16 @@ function registerShortcuts(): void {
   // Cmd+W — close tab
   globalShortcut.register('CommandOrControl+W', () => {
     mainWindow?.webContents.send('shortcut', 'close-tab');
+  });
+
+  // Cmd+K — toggle Kees panel
+  globalShortcut.register('CommandOrControl+K', () => {
+    panelManager?.togglePanel();
+  });
+
+  // Cmd+D — toggle draw mode
+  globalShortcut.register('CommandOrControl+D', () => {
+    drawManager?.toggleDrawMode();
   });
 
   // Cmd+1-9 — switch tabs

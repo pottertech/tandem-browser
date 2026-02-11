@@ -4,6 +4,8 @@ import http from 'http';
 import { BrowserWindow } from 'electron';
 import { copilotAlert } from '../main';
 import { TabManager } from '../tabs/manager';
+import { PanelManager } from '../panel/manager';
+import { DrawOverlayManager } from '../draw/overlay';
 import { humanizedClick, humanizedType } from '../input/humanized';
 
 export class TandemAPI {
@@ -12,11 +14,15 @@ export class TandemAPI {
   private win: BrowserWindow;
   private port: number;
   private tabManager: TabManager;
+  private panelManager: PanelManager;
+  private drawManager: DrawOverlayManager;
 
-  constructor(win: BrowserWindow, port: number = 8765, tabManager: TabManager) {
+  constructor(win: BrowserWindow, port: number = 8765, tabManager: TabManager, panelManager: PanelManager, drawManager: DrawOverlayManager) {
     this.win = win;
     this.port = port;
     this.tabManager = tabManager;
+    this.panelManager = panelManager;
+    this.drawManager = drawManager;
     this.app = express();
     this.app.use(cors());
     this.app.use(express.json());
@@ -72,6 +78,7 @@ export class TandemAPI {
         const wc = await this.getActiveWC();
         if (!wc) { res.status(500).json({ error: 'No active tab' }); return; }
         wc.loadURL(url);
+        this.panelManager.logActivity('navigate', { url });
         res.json({ ok: true, url });
       } catch (e: any) {
         res.status(500).json({ error: e.message });
@@ -122,6 +129,7 @@ export class TandemAPI {
         const wc = await this.getActiveWC();
         if (!wc) { res.status(500).json({ error: 'No active tab' }); return; }
         const result = await humanizedClick(wc, selector);
+        this.panelManager.logActivity('click', { selector });
         res.json(result);
       } catch (e: any) {
         res.status(500).json({ error: e.message });
@@ -142,6 +150,7 @@ export class TandemAPI {
         const wc = await this.getActiveWC();
         if (!wc) { res.status(500).json({ error: 'No active tab' }); return; }
         const result = await humanizedType(wc, selector, text, !!clear);
+        this.panelManager.logActivity('input', { selector, textLength: text.length });
         res.json(result);
       } catch (e: any) {
         res.status(500).json({ error: e.message });
@@ -220,6 +229,7 @@ export class TandemAPI {
           deltaX: 0,
           deltaY,
         });
+        this.panelManager.logActivity('scroll', { direction, amount });
         res.json({ ok: true });
       } catch (e: any) {
         res.status(500).json({ error: e.message });
@@ -373,6 +383,112 @@ export class TandemAPI {
       try {
         const group = this.tabManager.setGroup(groupId, name, color, tabIds);
         res.json({ ok: true, group });
+      } catch (e: any) {
+        res.status(500).json({ error: e.message });
+      }
+    });
+
+    // ═══════════════════════════════════════════════
+    // PANEL — Kees side panel
+    // ═══════════════════════════════════════════════
+
+    /** Get activity log */
+    this.app.get('/activity-log', (req: Request, res: Response) => {
+      try {
+        const limit = parseInt(req.query.limit as string) || 50;
+        const type = req.query.type as string | undefined;
+        const events = this.panelManager.getActivityLog(limit, type);
+        res.json({ events });
+      } catch (e: any) {
+        res.status(500).json({ error: e.message });
+      }
+    });
+
+    /** Toggle panel */
+    this.app.post('/panel/toggle', (req: Request, res: Response) => {
+      try {
+        const { open } = req.body;
+        const isOpen = this.panelManager.togglePanel(open);
+        res.json({ ok: true, open: isOpen });
+      } catch (e: any) {
+        res.status(500).json({ error: e.message });
+      }
+    });
+
+    /** Get chat messages */
+    this.app.get('/chat', (req: Request, res: Response) => {
+      try {
+        const limit = parseInt(req.query.limit as string) || 50;
+        const messages = this.panelManager.getChatMessages(limit);
+        res.json({ messages });
+      } catch (e: any) {
+        res.status(500).json({ error: e.message });
+      }
+    });
+
+    /** Send chat message as Kees */
+    this.app.post('/chat', (req: Request, res: Response) => {
+      const { text } = req.body;
+      if (!text) { res.status(400).json({ error: 'text required' }); return; }
+      try {
+        const msg = this.panelManager.addChatMessage('kees', text);
+        res.json({ ok: true, message: msg });
+      } catch (e: any) {
+        res.status(500).json({ error: e.message });
+      }
+    });
+
+    // ═══════════════════════════════════════════════
+    // DRAW — Annotated screenshots
+    // ═══════════════════════════════════════════════
+
+    /** Get last annotated screenshot */
+    this.app.get('/screenshot/annotated', (_req: Request, res: Response) => {
+      try {
+        const png = this.drawManager.getLastScreenshot();
+        if (!png) {
+          res.status(404).json({ error: 'No annotated screenshot available' });
+          return;
+        }
+        res.type('png').send(png);
+      } catch (e: any) {
+        res.status(500).json({ error: e.message });
+      }
+    });
+
+    /** Take annotated screenshot */
+    this.app.post('/screenshot/annotated', async (_req: Request, res: Response) => {
+      try {
+        const activeTab = this.tabManager.getActiveTab();
+        const wcId = activeTab ? activeTab.webContentsId : null;
+        const result = await this.drawManager.captureAnnotated(wcId);
+        if (result.ok) {
+          res.json(result);
+        } else {
+          res.status(500).json(result);
+        }
+      } catch (e: any) {
+        res.status(500).json({ error: e.message });
+      }
+    });
+
+    /** Toggle draw mode */
+    this.app.post('/draw/toggle', (req: Request, res: Response) => {
+      try {
+        const { enabled } = req.body;
+        const isEnabled = this.drawManager.toggleDrawMode(enabled);
+        res.json({ ok: true, drawMode: isEnabled });
+      } catch (e: any) {
+        res.status(500).json({ error: e.message });
+      }
+    });
+
+    /** List recent screenshots */
+    this.app.get('/screenshots', (req: Request, res: Response) => {
+      try {
+        const limit = parseInt(req.query.limit as string) || 10;
+        const screenshots = this.drawManager.listScreenshots(limit);
+        res.json({ screenshots });
       } catch (e: any) {
         res.status(500).json({ error: e.message });
       }

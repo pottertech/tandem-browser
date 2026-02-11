@@ -1,6 +1,9 @@
 import { app, BrowserWindow, session, ipcMain, Notification, globalShortcut, clipboard, nativeImage, webContents } from 'electron';
 import path from 'path';
 import fs from 'fs';
+
+// Disguise as Chrome — Google blocks login from "Electron" apps
+app.setName('Google Chrome');
 import os from 'os';
 import { TandemAPI } from './api/server';
 import { StealthManager } from './stealth/manager';

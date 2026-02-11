@@ -36,15 +36,23 @@ export class StealthManager {
       // Remove Electron/automation giveaways
       delete headers['X-Electron'];
       
+      // Remove any header containing "Electron"
+      for (const key of Object.keys(headers)) {
+        if (typeof headers[key] === 'string' && headers[key].includes('Electron')) {
+          headers[key] = headers[key].replace(/Electron\/[\d.]+\s*/g, '');
+        }
+      }
+      
       // Ensure realistic Accept-Language
       if (!headers['Accept-Language']) {
         headers['Accept-Language'] = 'nl-BE,nl;q=0.9,en-US;q=0.8,en;q=0.7';
       }
 
-      // Ensure Sec-CH-UA matches our UA
+      // Ensure Sec-CH-UA matches our UA (Google checks these for login)
       headers['Sec-CH-UA'] = '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"';
       headers['Sec-CH-UA-Mobile'] = '?0';
       headers['Sec-CH-UA-Platform'] = '"macOS"';
+      headers['Sec-CH-UA-Full-Version-List'] = '"Google Chrome";v="131.0.6778.205", "Chromium";v="131.0.6778.205", "Not_A Brand";v="24.0.0.0"';
 
       callback({ requestHeaders: headers });
     });

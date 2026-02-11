@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Centaur Browser</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root {
+      --bg: #1a1a2e;
+      --surface: #16213e;
+      --accent: #e94560;
+      --text: #eee;
+      --text-dim: #888;
+      --input-bg: #0f3460;
+      --success: #4ecca3;
+      --warning: #f0a500;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Top bar */
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background: var(--surface);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      -webkit-app-region: drag;
+    }
+
+    .toolbar button {
+      -webkit-app-region: no-drag;
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      font-size: 18px;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: all 0.15s;
+    }
+    .toolbar button:hover { color: var(--text); background: rgba(255,255,255,0.1); }
+
+    .url-bar {
+      -webkit-app-region: no-drag;
+      flex: 1;
+      background: var(--input-bg);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      padding: 8px 16px;
+      color: var(--text);
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .url-bar:focus { border-color: var(--accent); }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--success);
+      -webkit-app-region: no-drag;
+      transition: background 0.3s;
+    }
+    .status-dot.loading { background: var(--warning); animation: pulse 1s infinite; }
+    .status-dot.error { background: var(--accent); }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .kees-badge {
+      -webkit-app-region: no-drag;
+      font-size: 12px;
+      padding: 4px 10px;
+      background: rgba(233, 69, 96, 0.2);
+      border: 1px solid var(--accent);
+      border-radius: 12px;
+      color: var(--accent);
+      cursor: default;
+    }
+
+    /* Browser content */
+    .browser-content {
+      flex: 1;
+      position: relative;
+    }
+
+    webview {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    /* Copilot alert overlay */
+    .copilot-overlay {
+      display: none;
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--surface);
+      border: 1px solid var(--accent);
+      border-radius: 12px;
+      padding: 16px 20px;
+      max-width: 360px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+      z-index: 1000;
+      animation: slideIn 0.3s ease;
+    }
+    .copilot-overlay.visible { display: block; }
+    .copilot-overlay h3 { color: var(--accent); margin-bottom: 8px; font-size: 14px; }
+    .copilot-overlay p { color: var(--text-dim); font-size: 13px; line-height: 1.5; }
+    .copilot-overlay .dismiss {
+      position: absolute;
+      top: 8px;
+      right: 12px;
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="toolbar">
+    <button id="btn-back" title="Terug">←</button>
+    <button id="btn-forward" title="Vooruit">→</button>
+    <button id="btn-reload" title="Herladen">⟳</button>
+    <input class="url-bar" id="url-bar" type="text" placeholder="Voer URL in..." value="https://duckduckgo.com">
+    <div class="status-dot" id="status-dot" title="Verbonden met Kees API"></div>
+    <span class="kees-badge">🧀 Kees Online</span>
+  </div>
+
+  <div class="browser-content">
+    <webview id="browser" src="https://duckduckgo.com" allowpopups></webview>
+  </div>
+
+  <div class="copilot-overlay" id="copilot-overlay">
+    <button class="dismiss" onclick="dismissAlert()">✕</button>
+    <h3 id="alert-title">🧀 Kees heeft je nodig</h3>
+    <p id="alert-body">...</p>
+  </div>
+
+  <script>
+    const browser = document.getElementById('browser');
+    const urlBar = document.getElementById('url-bar');
+    const statusDot = document.getElementById('status-dot');
+    const overlay = document.getElementById('copilot-overlay');
+
+    // Navigation
+    document.getElementById('btn-back').onclick = () => browser.goBack();
+    document.getElementById('btn-forward').onclick = () => browser.goForward();
+    document.getElementById('btn-reload').onclick = () => browser.reload();
+
+    urlBar.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        let url = urlBar.value.trim();
+        if (!url.startsWith('http://') && !url.startsWith('https://')) {
+          // Search or add protocol
+          if (url.includes('.') && !url.includes(' ')) {
+            url = 'https://' + url;
+          } else {
+            url = 'https://duckduckgo.com/?q=' + encodeURIComponent(url);
+          }
+        }
+        browser.loadURL(url);
+      }
+    });
+
+    // Track navigation
+    browser.addEventListener('did-navigate', (e) => {
+      urlBar.value = e.url;
+    });
+    browser.addEventListener('did-navigate-in-page', (e) => {
+      if (e.isMainFrame) urlBar.value = e.url;
+    });
+
+    // Loading state
+    browser.addEventListener('did-start-loading', () => {
+      statusDot.classList.add('loading');
+    });
+    browser.addEventListener('did-stop-loading', () => {
+      statusDot.classList.remove('loading');
+    });
+    browser.addEventListener('did-fail-load', () => {
+      statusDot.classList.add('error');
+      setTimeout(() => statusDot.classList.remove('error'), 3000);
+    });
+
+    // Inject stealth script on every page
+    browser.addEventListener('dom-ready', () => {
+      // Will be populated by StealthManager
+    });
+
+    // Copilot alerts from Kees
+    if (window.tandem) {
+      window.tandem.onCopilotAlert((data) => {
+        document.getElementById('alert-title').textContent = data.title;
+        document.getElementById('alert-body').textContent = data.body;
+        overlay.classList.add('visible');
+        // Auto-dismiss after 15 seconds
+        setTimeout(dismissAlert, 15000);
+      });
+    }
+
+    function dismissAlert() {
+      overlay.classList.remove('visible');
+    }
+  </script>
+</body>
+</html>

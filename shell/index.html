@@ -916,6 +916,7 @@
           }
         }
         activeTabId = tabId;
+
         // Update URL bar
         const entry = tabs.get(tabId);
         if (entry) {
@@ -923,6 +924,10 @@
             const url = entry.webview.getURL();
             urlBar.value = url || '';
           } catch (_) {}
+
+          // Restore zoom level for this tab
+          const zoomLevel = tabZoomLevels.get(tabId) || 0;
+          entry.webview.setZoomLevel(zoomLevel);
         }
       },
     };
@@ -1208,19 +1213,6 @@
       }, 2000);
     }
 
-    // Restore zoom level when switching tabs
-    const _prevActivateTab = activateTab;
-    activateTab = function(tabId) {
-      _prevActivateTab(tabId);
-      
-      // Apply stored zoom level
-      const entry = tabs.get(tabId);
-      if (entry) {
-        const zoomLevel = tabZoomLevels.get(tabId) || 0;
-        entry.webview.setZoomLevel(zoomLevel);
-      }
-    };
-
     // ═══════════════════════════════════════════════
     // Kees badge → right-click or long-press → open settings
     const keesBadge = document.querySelector('.kees-badge');
@@ -1265,17 +1257,6 @@
 
     const keesPanel = document.getElementById('kees-panel');
     const panelBody = document.getElementById('panel-body');
-
-    // Listen for Cmd+K panel toggle from main process
-    if (window.tandem && window.tandem.onPanelToggle) {
-      window.tandem.onPanelToggle((data) => {
-        if (data.open) {
-          keesPanel.classList.add('open');
-        } else {
-          keesPanel.classList.remove('open');
-        }
-      });
-    }
 
     // Panel tab switching
     document.querySelectorAll('.panel-tab').forEach(btn => {

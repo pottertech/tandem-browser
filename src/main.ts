@@ -483,16 +483,18 @@ app.whenReady().then(async () => {
 });
 
 app.on('will-quit', () => {
-  
-});
-
-app.on('window-all-closed', () => {
-  
+  // Cleanup all managers and resources
+  if (api) api.stop();
   if (behaviorObserver) behaviorObserver.destroy();
   if (watchManager) watchManager.destroy();
   if (headlessManager) headlessManager.destroy();
   if (pipManager) pipManager.destroy();
   if (networkInspector) networkInspector.destroy();
+  if (voiceManager) voiceManager.stop();
+  if (audioCaptureManager) audioCaptureManager.stopRecording();
+});
+
+app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();
   }

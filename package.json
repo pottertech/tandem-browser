@@ -6,8 +6,8 @@
   "author": "Robin Waslander <keesbeest78@proton.me>",
   "license": "MIT",
   "scripts": {
-    "dev": "tsc && electron dist/main.js --dev",
-    "start": "tsc && electron dist/main.js",
+    "dev": "tsc && npx electron .",
+    "start": "npm run compile && node scripts/run-electron.js",
     "compile": "tsc",
     "watch": "tsc -w",
     "build": "tsc && electron-builder"

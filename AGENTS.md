@@ -63,6 +63,44 @@ Je bent een developer agent die werkt aan **Tandem Browser** — een Electron br
 - API alleen binden aan `127.0.0.1` — nooit `0.0.0.0`
 - Stealth patches: niet verwijderen of uitschakelen
 
+## ⚔️ ANTI-DETECTIE ARCHITECTUUR — KRITISCH
+
+### De Gouden Regel
+**Alles wat Kees doet moet onzichtbaar zijn vanuit de webpagina's JavaScript context.**
+
+De website mag ALLEEN zien: "een mens in Chrome op een Mac in België". Kees staat over Robin's schouder mee te kijken, maar de website weet dat niet.
+
+### Twee-lagen architectuur
+- **Layer 1 (website ziet):** Normale Chromium webview, echte sessie, menselijk gedrag
+- **Layer 2 (onzichtbaar):** Electron main process + shell UI waar Kees opereert
+
+### Verplichte patronen
+
+| Wat | ❌ VERBODEN | ✅ VERPLICHT |
+|-----|-----------|------------|
+| Screenshot | Canvas API in webview | `webContents.capturePage()` main process |
+| Click | `el.click()` / `dispatchEvent()` in webview | `webContents.sendInputEvent()` OS-level |
+| Type | `el.value = "text"` in webview | `sendInputEvent({type:'char'})` per karakter |
+| Page lezen | Injected DOM crawler script | `executeJavaScript()` vanuit main process (kort, minimaal) |
+| Draw overlay | Canvas IN de webview | Canvas in de shell BOVEN de webview |
+| Voice | Web Speech API in webview | Web Speech API in de shell |
+| Kees paneel | iframe/element in webview | Electron panel, apart van webview |
+| Activity track | MutationObserver in pagina | Electron webview events |
+
+### Wat websites detecteren
+- `Event.isTrusted` — programmatische events = false → gebruik sendInputEvent
+- `document.hasFocus()` — als Kees panel focus heeft → mock focus behouden
+- `performance.now()` timing — te snel = bot → random delays 80-300ms
+- Injected DOM elements — alles wat niet van de site is → NOOIT in webview
+- WebSocket naar localhost — onze API mag NIET vanuit de webview aangeroepen worden
+
+### Timing humanisatie
+Elke automated actie MOET:
+1. Random delay: 80-300ms voor clicks, 30-120ms tussen toetsaanslagen
+2. Gaussian verdeling (niet uniform — mensen zijn niet uniform)
+3. Occasionele langere pauze (500-2000ms) — mensen kijken soms even
+4. Scroll: variabele snelheid, niet pixel-perfect
+
 ## Bestandsstructuur
 
 ```

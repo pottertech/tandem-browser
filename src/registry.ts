@@ -42,6 +42,7 @@ import type { StateManager } from './sessions/state';
 import type { ScriptInjector } from './scripts/injector';
 import type { LocatorFinder } from './locators/finder';
 import type { DeviceEmulator } from './device/emulator';
+import type { SidebarManager } from './sidebar/manager';
 
 export interface ManagerRegistry {
   tabManager: TabManager;
@@ -82,4 +83,5 @@ export interface ManagerRegistry {
   scriptInjector: ScriptInjector;
   locatorFinder: LocatorFinder;
   deviceEmulator: DeviceEmulator;
+  sidebarManager: SidebarManager;
 }

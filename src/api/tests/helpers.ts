@@ -420,6 +420,17 @@ export function createMockContext(): RouteContext {
       emulateCustom: vi.fn().mockResolvedValue(undefined),
       reset: vi.fn().mockResolvedValue(undefined),
     } as any,
+
+    // ── sidebarManager ───────────────────────────
+    sidebarManager: {
+      getConfig: vi.fn().mockReturnValue({ state: 'narrow', activeItemId: null, items: [] }),
+      updateConfig: vi.fn().mockReturnValue({ state: 'narrow', activeItemId: null, items: [] }),
+      toggleItem: vi.fn().mockReturnValue({ id: 'bookmarks', enabled: false }),
+      reorderItems: vi.fn(),
+      setState: vi.fn(),
+      setActiveItem: vi.fn(),
+      destroy: vi.fn(),
+    } as any,
   };
 
   return ctx;

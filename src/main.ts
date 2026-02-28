@@ -55,6 +55,7 @@ import { StateManager } from './sessions/state';
 import { ScriptInjector } from './scripts/injector';
 import { LocatorFinder } from './locators/finder';
 import { DeviceEmulator } from './device/emulator';
+import { SidebarManager } from './sidebar/manager';
 import { ContentExtractor } from './content/extractor';
 import { WorkflowEngine } from './workflow/engine';
 import { LoginManager } from './auth/login-manager';
@@ -108,6 +109,7 @@ let stateManager: StateManager | null = null;
 let scriptInjector: ScriptInjector | null = null;
 let locatorFinder: LocatorFinder | null = null;
 let deviceEmulator: DeviceEmulator | null = null;
+let sidebarManager: SidebarManager | null = null;
 /** Queue webview webContents created before contextMenuManager is ready */
 const pendingContextMenuWebContents: WebContents[] = [];
 /** Queue tab-register IPC when it arrives before tabManager is ready */
@@ -321,6 +323,7 @@ async function startAPI(win: BrowserWindow): Promise<void> {
   scriptInjector = new ScriptInjector();
   locatorFinder = new LocatorFinder(devToolsManager!, snapshotManager!);
   deviceEmulator = new DeviceEmulator();
+  sidebarManager = new SidebarManager();
   devToolsManager.setCopilotStream(copilotStream!);
   devToolsManager.setActivityTracker(activityTracker!);
 
@@ -431,6 +434,7 @@ async function startAPI(win: BrowserWindow): Promise<void> {
     scriptInjector: scriptInjector!,
     locatorFinder: locatorFinder!,
     deviceEmulator: deviceEmulator!,
+    sidebarManager: sidebarManager!,
   };
 
   api = new TandemAPI({ win, port: API_PORT, registry });
@@ -570,6 +574,7 @@ app.on('will-quit', () => {
   if (extensionManager) extensionManager.getIdentityPolyfill().destroy();
   if (extensionManager) extensionManager.destroyUpdateChecker();
   if (historyManager) historyManager.destroy();
+  if (sidebarManager) sidebarManager.destroy();
 });
 
 app.on('window-all-closed', () => {

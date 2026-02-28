@@ -2,6 +2,17 @@
 
 All notable changes to Tandem Browser will be documented in this file.
 
+## [v0.15.2] - 2026-02-28
+
+- feat: sidebar infrastructure — SidebarManager + config API
+
+- New `SidebarManager` with JSON config storage (`~/.tandem/sidebar-config.json`)
+- 7 default sidebar items: Workspaces, Messengers, Personal News, Pinboards, Bookmarks, History, Downloads
+- 6 REST API endpoints: GET/POST config, toggle item, activate item, reorder, set state
+- Sidebar state: hidden / narrow / wide (persisted across restarts)
+- Wired into ManagerRegistry + will-quit cleanup
+- Foundation for Fase 2 (Shell UI) and Fase 3 (Bookmarks panel)
+
 ## [v0.15.1] - 2026-02-28
 
 - fix: About window now shows correct version

@@ -2,6 +2,10 @@
 
 All notable changes to Tandem Browser will be documented in this file.
 
+## [v0.18.2] - 2026-02-28
+
+- fix: dark scrollbar for sidebar panel content
+
 ## [v0.18.1] - 2026-02-28
 
 - fix: sidebar setup panel — title bug, English sections, cleaner icons

@@ -132,7 +132,7 @@ Geen DOM-manipulatie in webpages. Geen stealth impact.
 
 | Fase | Titel | Status | Commit |
 |------|-------|--------|--------|
-| 1 | SidebarManager + config API | ⏳ niet gestart | — |
+| 1 | SidebarManager + config API | ✅ klaar | 0e34eae |
 | 2 | Shell UI (icon strip + panel container + shortcut) | ⏳ niet gestart | — |
 | 3 | Eerste plugin: Bookmarks panel | ⏳ niet gestart | — |
 

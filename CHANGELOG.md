@@ -2,6 +2,16 @@
 
 All notable changes to Tandem Browser will be documented in this file.
 
+## [v0.15.0] - 2026-02-28
+
+- feat: add auto-versioning git hook + setup script
+
+- git-hooks/post-commit: auto-bump version + update CHANGELOG
+- setup-dev.sh: one-command dev environment setup
+- Configures core.hooksPath to use git-hooks/ (committed in repo)
+- Kees can run ./setup-dev.sh after next pull to enable hook
+- Ensures consistent versioning across all dev machines
+
 ## [v0.14.3] - 2026-02-28
 
 - fix: About window improvements (height 650, auto-version from package.json)

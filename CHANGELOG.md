@@ -2,6 +2,10 @@
 
 All notable changes to Tandem Browser will be documented in this file.
 
+## [v0.21.2] - 2026-02-28
+
+- fix: panel resize max width = window width — no arbitrary limit
+
 ## [v0.21.1] - 2026-02-28
 
 - fix: panel resize — drag cover blocks webview, handle inside bounds, max 900px

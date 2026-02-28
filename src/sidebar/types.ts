@@ -14,5 +14,6 @@ export interface SidebarConfig {
   state: SidebarState;
   activeItemId: string | null;
   panelPinned: boolean;
+  panelWidths: Record<string, number>;
   items: SidebarItem[];
 }

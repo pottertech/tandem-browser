@@ -1042,7 +1042,7 @@
       box-shadow: 4px 0 16px rgba(0,0,0,0.3);
     }
     .sidebar-panel.open {
-      width: 340px;
+      width: var(--panel-width, 340px);
     }
     /* Panel — pinned mode (push) */
     .sidebar-panel.pinned {
@@ -1102,6 +1102,22 @@
     }
     .sidebar-panel-content::-webkit-scrollbar-thumb:hover {
       background: rgba(255,255,255,0.22);
+    }
+    /* Resize handle */
+    .sidebar-panel-resize {
+      position: absolute;
+      right: -3px;
+      top: 0;
+      width: 6px;
+      height: 100%;
+      cursor: ew-resize;
+      z-index: 10;
+      background: transparent;
+      transition: background 0.15s;
+    }
+    .sidebar-panel-resize:hover,
+    .sidebar-panel-resize.dragging {
+      background: rgba(124, 92, 191, 0.5);
     }
     .sidebar-panel-content.webview-mode {
       padding: 0;

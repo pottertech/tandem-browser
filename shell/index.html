@@ -89,6 +89,7 @@
         <div class="sidebar-panel-content" id="sidebar-panel-content">
           <!-- Inhoud gerenderd door actief item (Fase 3+) -->
         </div>
+        <div class="sidebar-panel-resize" id="sidebar-panel-resize"></div>
       </div>
 
     </div>
@@ -475,6 +476,9 @@
           const activeItem = config.items.find(i => i.id === config.activeItemId);
           panel.classList.add('open');
           panelTitle.textContent = activeItem?.label || '';
+          // Apply saved width for this item
+          const savedWidth = getPanelWidth(config.activeItemId);
+          setPanelWidth(savedWidth);
         } else {
           panel.classList.remove('open');
         }
@@ -634,6 +638,70 @@
         pinBtn && pinBtn.classList.remove('active');
       }
     }
+
+    // === PANEL RESIZE ===
+    const DEFAULT_PANEL_WIDTH = 340;
+    const MIN_PANEL_WIDTH = 220;
+    const MAX_PANEL_WIDTH = 600;
+
+    function getPanelWidth(id) {
+      return (config.panelWidths && config.panelWidths[id]) || DEFAULT_PANEL_WIDTH;
+    }
+
+    function setPanelWidth(width) {
+      const panel = document.getElementById('sidebar-panel');
+      panel.style.width = width + 'px';
+      panel.style.setProperty('--panel-width', width + 'px');
+    }
+
+    async function savePanelWidth(id, width) {
+      if (!config.panelWidths) config.panelWidths = {};
+      config.panelWidths[id] = width;
+      await fetch('http://localhost:8765/sidebar/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${TOKEN}` },
+        body: JSON.stringify({ panelWidths: config.panelWidths })
+      });
+    }
+
+    // Resize drag logic
+    let resizeDragging = false;
+    let resizeStartX = 0;
+    let resizeStartWidth = 0;
+    let resizeActiveId = null;
+
+    const resizeHandle = document.getElementById('sidebar-panel-resize');
+
+    resizeHandle.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      resizeDragging = true;
+      resizeStartX = e.clientX;
+      const panel = document.getElementById('sidebar-panel');
+      resizeStartWidth = panel.offsetWidth;
+      resizeActiveId = config.activeItemId;
+      resizeHandle.classList.add('dragging');
+      document.body.style.cursor = 'ew-resize';
+      document.body.style.userSelect = 'none';
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      if (!resizeDragging) return;
+      const delta = e.clientX - resizeStartX;
+      const newWidth = Math.min(MAX_PANEL_WIDTH, Math.max(MIN_PANEL_WIDTH, resizeStartWidth + delta));
+      setPanelWidth(newWidth);
+    });
+
+    document.addEventListener('mouseup', async (e) => {
+      if (!resizeDragging) return;
+      resizeDragging = false;
+      resizeHandle.classList.remove('dragging');
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      if (resizeActiveId) {
+        const panel = document.getElementById('sidebar-panel');
+        await savePanelWidth(resizeActiveId, panel.offsetWidth);
+      }
+    });
 
     function init() {
       loadConfig();

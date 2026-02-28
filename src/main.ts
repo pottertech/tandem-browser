@@ -201,18 +201,23 @@ async function createWindow(): Promise<BrowserWindow> {
 
       // Handle popups from webviews
       contents.setWindowOpenHandler(({ url }) => {
-        // Sidebar webviews handle their own popups (e.g. Telegram auth)
-        if (isSidebarWebview) return { action: 'deny' };
-        // OAuth/auth popups need window.opener — allow as real popup with proper config
+        // OAuth/auth popups need window.opener — allow for ALL webviews (incl. sidebar)
+        // e.g. Google login from Gmail/Calendar sidebar panel
         const isAuth = AUTH_POPUP_PATTERNS.some(p => url.includes(p));
+        // Sidebar webviews: allow auth popups, deny everything else
+        if (isSidebarWebview && !isAuth) return { action: 'deny' };
         if (isAuth) {
+          // Use sidebar partition for sidebar webviews so auth cookies are shared
+          const authPartition = isSidebarWebview
+            ? (SIDEBAR_PARTITIONS.find(p => contents.session === session.fromPartition(p)) ?? partition)
+            : partition;
           return {
             action: 'allow',
             overrideBrowserWindowOptions: {
               width: 500,
               height: 700,
               webPreferences: {
-                partition,
+                partition: authPartition,
                 nodeIntegration: false,
                 contextIsolation: true,
                 sandbox: true,

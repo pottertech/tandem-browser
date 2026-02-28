@@ -221,6 +221,13 @@ contextBridge.exposeInMainWorld('tandem', {
     return () => ipcRenderer.removeListener('extension-toolbar-refresh', handler);
   },
 
+  // Sidebar webview reload (after Google auth popup)
+  onReloadSidebarWebview: (callback: (id: string) => void) => {
+    const handler = (_event: Electron.IpcRendererEvent, id: string) => callback(id);
+    ipcRenderer.on('reload-sidebar-webview', handler);
+    return () => ipcRenderer.removeListener('reload-sidebar-webview', handler);
+  },
+
   // Chrome-style compact title bar: platform detection and window controls
   getPlatform: () => process.platform,
   showAppMenu: () => ipcRenderer.send('show-app-menu'),

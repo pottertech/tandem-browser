@@ -233,6 +233,26 @@ async function createWindow(): Promise<BrowserWindow> {
       });
     }
 
+    // Auto-reload sidebar webview after Google auth popup completes
+    if (isSidebarWebview) {
+      const sidebarPartition = SIDEBAR_PARTITIONS.find(
+        p => contents.session === session.fromPartition(p)
+      );
+      if (sidebarPartition) {
+        const sidebarId = sidebarPartition.replace('persist:', '');
+        contents.on('did-create-window', (win) => {
+          win.webContents.on('did-navigate', (_e, url) => {
+            if (!url.includes('accounts.google.com') && !url.includes('google.com/o/oauth2')) {
+              win.close();
+              if (mainWindow) {
+                mainWindow.webContents.send('reload-sidebar-webview', sidebarId);
+              }
+            }
+          });
+        });
+      }
+    }
+
     // Catch-all: route unmanaged webContents navigations back through TabManager.
     // IMPORTANT: check hasWebContents at navigate time, NOT at registration time.
     // Reason: TabManager registers webContents asynchronously (via executeJavaScript),

@@ -82,6 +82,7 @@
         <div class="sidebar-panel-header">
           <span class="sidebar-panel-title" id="sidebar-panel-title"></span>
           <div style="display:flex;align-items:center;gap:2px;">
+            <button class="sidebar-panel-reload" id="sidebar-panel-reload" title="Reload">↺</button>
             <button class="sidebar-panel-pin" id="sidebar-panel-pin" title="Pin panel">📌</button>
             <button class="sidebar-panel-close" id="sidebar-panel-close" title="Sluiten">✕</button>
           </div>
@@ -730,6 +731,12 @@
         });
       });
 
+      document.getElementById('sidebar-panel-reload').addEventListener('click', () => {
+        if (config.activeItemId && webviewCache.has(config.activeItemId)) {
+          webviewCache.get(config.activeItemId).reload();
+        }
+      });
+
       document.getElementById('sidebar-panel-close').addEventListener('click', () => {
         const panel = document.getElementById('sidebar-panel');
         panel.classList.remove('open');
@@ -763,6 +770,14 @@
           toggleVisibility();
         }
       });
+
+      // Listen for main process signal to reload a sidebar webview (e.g. after Google auth)
+      if (window.tandem && window.tandem.onReloadSidebarWebview) {
+        window.tandem.onReloadSidebarWebview((id) => {
+          const wv = webviewCache.get(id);
+          if (wv) wv.reload();
+        });
+      }
     }
 
     return { init, loadConfig, activateItem, toggleVisibility };

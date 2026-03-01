@@ -1021,6 +1021,14 @@
           <div class="pb-items-header">
             <button class="pb-back-btn" id="pb-back-btn">&larr;</button>
             <select class="pb-board-switcher" id="pb-board-switcher"></select>
+            <button class="pb-note-btn" id="pb-note-btn" title="Add text note">✏️</button>
+          </div>
+          <div class="pb-note-editor" id="pb-note-editor" style="display:none;">
+            <textarea class="pb-note-textarea" id="pb-note-textarea" placeholder="Type your note here…" rows="4"></textarea>
+            <div class="pb-note-actions">
+              <button class="pb-note-save" id="pb-note-save">Save</button>
+              <button class="pb-note-cancel" id="pb-note-cancel">Cancel</button>
+            </div>
           </div>
           <div class="pb-item-list" id="pb-item-list">
             <div class="bm-empty">Loading...</div>
@@ -1031,6 +1039,37 @@
 
       document.getElementById('pb-back-btn')?.addEventListener('click', () => {
         loadPinboardPanel();
+      });
+
+      document.getElementById('pb-note-btn')?.addEventListener('click', () => {
+        const editor = document.getElementById('pb-note-editor');
+        const textarea = document.getElementById('pb-note-textarea');
+        if (editor.style.display === 'none') {
+          editor.style.display = 'block';
+          textarea.focus();
+        } else {
+          editor.style.display = 'none';
+          textarea.value = '';
+        }
+      });
+
+      document.getElementById('pb-note-save')?.addEventListener('click', async () => {
+        const textarea = document.getElementById('pb-note-textarea');
+        const text = textarea.value.trim();
+        if (!text) return;
+        await fetch(`http://localhost:8765/pinboards/${boardId}/items`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${TOKEN}` },
+          body: JSON.stringify({ type: 'text', content: text })
+        });
+        textarea.value = '';
+        document.getElementById('pb-note-editor').style.display = 'none';
+        await pbRefreshItems(boardId);
+      });
+
+      document.getElementById('pb-note-cancel')?.addEventListener('click', () => {
+        document.getElementById('pb-note-textarea').value = '';
+        document.getElementById('pb-note-editor').style.display = 'none';
       });
       document.getElementById('pb-board-switcher')?.addEventListener('change', (e) => {
         const sel = e.target;

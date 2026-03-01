@@ -2,6 +2,16 @@
 
 All notable changes to Tandem Browser will be documented in this file.
 
+## [v0.31.0] - 2026-03-01
+
+- feat: SyncManager — cross-device tab/history/workspace sync via shared folder
+
+Add SyncManager that enables cross-device sync by writing device-specific
+data (tabs, history) and shared data (workspaces) to a configurable sync
+folder (Google Drive, iCloud, or any local path). Includes "Your Devices"
+section in the history sidebar panel, API endpoints for config/status/trigger,
+and debounced atomic writes to prevent corruption. Bumps to v0.30.0.
+
 ## [v0.29.0] - 2026-03-01
 
 - feat: full Opera-style tab context menu with workspace icons, mute, duplicate, close actions

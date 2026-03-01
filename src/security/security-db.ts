@@ -52,6 +52,9 @@ export class SecurityDB {
   private stmtGetWidespreadAstScripts!: Database.Statement;
   private stmtUpdateAstFeatures!: Database.Statement;
   private stmtGetAstFeaturesForBlockedCheck!: Database.Statement;
+  // Analyzed script hash cache (persistent cross-session)
+  private stmtIsScriptHashAnalyzed!: Database.Statement;
+  private stmtMarkScriptHashAnalyzed!: Database.Statement;
 
   constructor() {
     const dbDir = tandemDir('security');
@@ -205,6 +208,16 @@ export class SecurityDB {
     } catch {
       // Column already exists — ignore
     }
+
+    // Persistent hash cache: skip re-analysis of scripts already analyzed in previous sessions
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS analyzed_script_hashes (
+        hash TEXT PRIMARY KEY,
+        analyzed_at INTEGER NOT NULL
+      )
+    `);
+    // Cleanup entries older than 30 days
+    this.db.exec(`DELETE FROM analyzed_script_hashes WHERE analyzed_at < ${Date.now() - 30 * 24 * 60 * 60 * 1000}`);
   }
 
   private prepareStatements(): void {
@@ -343,6 +356,13 @@ export class SecurityDB {
       ORDER BY last_seen DESC
       LIMIT 200
     `);
+    // Analyzed script hash cache
+    this.stmtIsScriptHashAnalyzed = this.db.prepare(
+      'SELECT 1 FROM analyzed_script_hashes WHERE hash = ?'
+    );
+    this.stmtMarkScriptHashAnalyzed = this.db.prepare(
+      'INSERT OR IGNORE INTO analyzed_script_hashes (hash, analyzed_at) VALUES (?, ?)'
+    );
   }
 
   // === Domains — fast lookups ===
@@ -662,6 +682,16 @@ export class SecurityDB {
 
   setBlocklistMeta(key: string, value: string): void {
     this.blocklistDB.setBlocklistMeta(key, value);
+  }
+
+  // === Analyzed script hash cache (persistent cross-session) ===
+
+  isScriptHashAnalyzed(hash: string): boolean {
+    return !!this.stmtIsScriptHashAnalyzed.get(hash);
+  }
+
+  markScriptHashAnalyzed(hash: string): void {
+    this.stmtMarkScriptHashAnalyzed.run(hash, Date.now());
   }
 
   // === Cleanup ===

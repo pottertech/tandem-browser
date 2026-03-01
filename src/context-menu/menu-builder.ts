@@ -302,14 +302,14 @@ export class ContextMenuBuilder {
     menu.append(new MenuItem({
       label: 'Back',
       accelerator: 'Alt+Left',
-      enabled: wc.canGoBack(),
-      click: () => { if (!wc.isDestroyed()) wc.goBack(); },
+      enabled: wc.navigationHistory.canGoBack(),
+      click: () => { if (!wc.isDestroyed()) wc.navigationHistory.goBack(); },
     }));
     menu.append(new MenuItem({
       label: 'Forward',
       accelerator: 'Alt+Right',
-      enabled: wc.canGoForward(),
-      click: () => { if (!wc.isDestroyed()) wc.goForward(); },
+      enabled: wc.navigationHistory.canGoForward(),
+      click: () => { if (!wc.isDestroyed()) wc.navigationHistory.goForward(); },
     }));
     menu.append(new MenuItem({
       label: 'Reload',

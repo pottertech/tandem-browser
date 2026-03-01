@@ -330,8 +330,8 @@ export function registerIpcHandlers(deps: IpcDeps): void {
 
   ipcMain.handle('go-back', async () => {
     const wc = await tabManager.getActiveWebContents();
-    if (wc && wc.canGoBack()) {
-      wc.goBack();
+    if (wc && wc.navigationHistory.canGoBack()) {
+      wc.navigationHistory.goBack();
       return { success: true };
     }
     return { success: false };
@@ -339,8 +339,8 @@ export function registerIpcHandlers(deps: IpcDeps): void {
 
   ipcMain.handle('go-forward', async () => {
     const wc = await tabManager.getActiveWebContents();
-    if (wc && wc.canGoForward()) {
-      wc.goForward();
+    if (wc && wc.navigationHistory.canGoForward()) {
+      wc.navigationHistory.goForward();
       return { success: true };
     }
     return { success: false };

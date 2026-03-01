@@ -35,6 +35,30 @@ const ENTROPY_MIN_LENGTH = 1000;
 const ENTROPY_MAX_LENGTH = 500_000; // 500KB
 const MAX_SCRIPT_SIZE = 500 * 1024; // 500KB — skip analysis for very large scripts
 
+// Trusted CDN domains — skip expensive AST parsing and entropy analysis (rule engine still runs)
+const TRUSTED_CDN_DOMAINS = new Set([
+  'cdn.jsdelivr.net',
+  'cdnjs.cloudflare.com',
+  'unpkg.com',
+  'ajax.googleapis.com',
+  'cdn.cloudflare.com',
+  'code.jquery.com',
+  'stackpath.bootstrapcdn.com',
+  'maxcdn.bootstrapcdn.com',
+  'fonts.googleapis.com',
+  'cdn.ampproject.org',
+  'platform.linkedin.com',
+  'static.licdn.com',
+  'static-exp1.licdn.com',
+  'static-exp2.licdn.com',
+  'connect.facebook.net',
+  'platform.twitter.com',
+  'apis.google.com',
+  'www.googletagmanager.com',
+  'www.google-analytics.com',
+  'cdn.segment.com',
+]);
+
 /** Run JS_THREAT_RULES against script source, return scored analysis result */
 function analyzeScriptContent(source: string, url: string): ScriptAnalysisResult {
   const matches: ThreatRuleMatch[] = [];
@@ -423,6 +447,12 @@ export class ScriptGuard {
       this.db.updateScriptHash(domain, url, sourceHash);
       this.correlateScriptHash(sourceHash, domain, url);
 
+      // 0-fast. Persistent hash cache — skip all expensive analysis if this exact script was analyzed before
+      if (this.db.isScriptHashAnalyzed(sourceHash)) {
+        this.analyzedUrls.add(url);
+        return;
+      }
+
       // 0a. Compute and store normalized hash (Phase 3-B)
       const normalized = normalizeScriptSource(source);
       const normalizedHash = createHash('sha256').update(normalized).digest('hex');
@@ -431,9 +461,12 @@ export class ScriptGuard {
       // 0b. Cross-domain correlation on normalized hash (Phase 3-B)
       this.correlateScriptHash(normalizedHash, domain, url, 'normalized');
 
+      // Check if this is a trusted CDN domain — skip expensive AST/entropy analysis
+      const isTrustedCDN = TRUSTED_CDN_DOMAINS.has(domain);
+
       // 0c. AST hash for obfuscation-resistant fingerprinting (Phase 6-A)
       let astNode: acorn.Node | null = null;
-      if (source.length <= MAX_AST_PARSE_SIZE) {
+      if (!isTrustedCDN && source.length <= MAX_AST_PARSE_SIZE) {
         astNode = parseToAST(source);
         if (astNode) {
           const astHash = computeASTHash(astNode);
@@ -450,12 +483,12 @@ export class ScriptGuard {
         // If parse fails (syntax error), ast_hash stays null — graceful degradation
       }
 
-      // 1. Run rule engine
+      // 1. Run rule engine (cheap regex — always runs, even for CDN scripts)
       const analysis = analyzeScriptContent(source, url);
 
-      // 2. Run entropy check (if within size bounds)
+      // 2. Run entropy check (if within size bounds, skip for trusted CDN domains)
       let entropy: number | undefined;
-      if (source.length >= ENTROPY_MIN_LENGTH && source.length <= ENTROPY_MAX_LENGTH) {
+      if (!isTrustedCDN && source.length >= ENTROPY_MIN_LENGTH && source.length <= ENTROPY_MAX_LENGTH) {
         entropy = calculateEntropy(source);
         analysis.entropy = entropy;
 
@@ -532,8 +565,9 @@ export class ScriptGuard {
         this.runSimilarityCheck(astNode, domain, url);
       }
 
-      // Mark URL as analyzed so reloads/navigations within this session skip re-analysis
+      // Mark as analyzed: in-memory (session) + persistent DB (cross-session)
       this.analyzedUrls.add(url);
+      this.db.markScriptHashAnalyzed(sourceHash);
 
       const perfMs = performance.now() - perfStart;
       if (perfMs > 50) {

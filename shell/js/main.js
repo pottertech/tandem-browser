@@ -116,6 +116,7 @@
         const tabEl = document.createElement('div');
         tabEl.className = 'tab';
         tabEl.dataset.tabId = tabId;
+        tabEl.draggable = true;
         tabEl.innerHTML = `
           <span class="tab-source" title="You controlled">👤</span>
           <span class="group-dot" style="display:none"></span>
@@ -130,10 +131,18 @@
           if (window.tandem) window.tandem.focusTab(tabId);
         });
 
-        // Right-click context menu
+        // Right-click context menu (custom DOM menu for workspace move)
         tabEl.addEventListener('contextmenu', (e) => {
           e.preventDefault();
-          if (window.tandem) window.tandem.showTabContextMenu(tabId);
+          if (window.__tandemShowTabContextMenu) {
+            window.__tandemShowTabContextMenu(tabEl.dataset.tabId, e.clientX, e.clientY);
+          }
+        });
+
+        // Drag start for workspace drag-and-drop
+        tabEl.addEventListener('dragstart', (e) => {
+          e.dataTransfer.setData('text/tab-id', tabEl.dataset.tabId);
+          e.dataTransfer.effectAllowed = 'move';
         });
 
         // Close button
@@ -287,6 +296,7 @@
       const tabEl = document.createElement('div');
       tabEl.className = 'tab active';
       tabEl.dataset.tabId = '__initial';
+      tabEl.draggable = true;
       tabEl.innerHTML = `
         <span class="tab-source" title="You controlled">👤</span>
         <span class="group-dot" style="display:none"></span>
@@ -339,7 +349,9 @@
             });
             entry.tabEl.addEventListener('contextmenu', (e) => {
               e.preventDefault();
-              if (window.tandem) window.tandem.showTabContextMenu(data.tabId);
+              if (window.__tandemShowTabContextMenu) {
+                window.__tandemShowTabContextMenu(entry.tabEl.dataset.tabId, e.clientX, e.clientY);
+              }
             });
             entry.tabEl.querySelector('.tab-close').addEventListener('click', () => {
               if (window.tandem) window.tandem.closeTab(data.tabId);
@@ -367,6 +379,12 @@
         if (window.tandem && activeTabId) window.tandem.focusTab(activeTabId);
       });
       // contextmenu listener is added in onTabRegistered handler (with resolved tabId)
+
+      // Drag start for workspace drag-and-drop
+      tabEl.addEventListener('dragstart', (e) => {
+        e.dataTransfer.setData('text/tab-id', tabEl.dataset.tabId);
+        e.dataTransfer.effectAllowed = 'move';
+      });
     })();
 
     // ═══════════════════════════════════════════════

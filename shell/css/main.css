@@ -2854,3 +2854,71 @@
   color: #fff;
 }
 .tandem-modal-btn-danger:hover { background: #e74c3c; }
+
+/* === TAB DRAG TO WORKSPACE — drop zone highlight === */
+.workspace-icon.ws-drop-active .workspace-icon-inner {
+  box-shadow: 0 0 0 2px #4f46e5, 0 0 12px rgba(79,70,229,0.4);
+  background: rgba(79,70,229,0.2) !important;
+  transform: scale(1.15);
+}
+
+/* === CUSTOM CONTEXT MENU (tab right-click) === */
+.tandem-ctx-menu {
+  position: fixed;
+  z-index: 99998;
+  background: #1e1e1e;
+  border: 1px solid #333;
+  border-radius: 12px;
+  padding: 6px 0;
+  min-width: 200px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  font-size: 13px;
+  color: #eee;
+  user-select: none;
+}
+.tandem-ctx-menu-item {
+  padding: 8px 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: background 0.1s;
+  position: relative;
+  white-space: nowrap;
+}
+.tandem-ctx-menu-item:hover {
+  background: rgba(255,255,255,0.08);
+}
+.tandem-ctx-menu-item .ctx-arrow {
+  font-size: 10px;
+  color: #888;
+  margin-left: 12px;
+}
+.tandem-ctx-submenu {
+  position: absolute;
+  top: -6px;
+  left: 100%;
+  background: #1e1e1e;
+  border: 1px solid #333;
+  border-radius: 12px;
+  padding: 6px 0;
+  min-width: 180px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  display: none;
+}
+.tandem-ctx-menu-item:hover > .tandem-ctx-submenu {
+  display: block;
+}
+.tandem-ctx-submenu-item {
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background 0.1s;
+  white-space: nowrap;
+}
+.tandem-ctx-submenu-item:hover {
+  background: rgba(255,255,255,0.08);
+}
+.tandem-ctx-submenu.flip-left {
+  left: auto;
+  right: 100%;
+}

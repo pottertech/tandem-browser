@@ -240,8 +240,8 @@ curl -H "Authorization: Bearer $TOKEN" \
 - [x] "+" knop maakt nieuwe workspace aan (inline icon picker + name input)
 - [x] Klik op workspace icon → tab bar filtert, alleen die workspace's tabs zichtbaar
 - [x] Nieuwe tabs worden automatisch aan actieve workspace toegewezen
-- [ ] Rechtermuisklik tab → "Verplaats naar workspace" → submenu met workspaces
-- [ ] Tab verplaatsen naar andere workspace → tab verdwijnt uit huidige tab bar
+- [x] Rechtermuisklik tab → "Verplaats naar workspace" → submenu met workspaces (v0.27.1, custom DOM menu)
+- [x] Tab verplaatsen naar andere workspace → tab verdwijnt uit huidige tab bar (v0.27.1, drag-and-drop + context menu)
 - [x] Workspace wisselen → tab bar update → juiste tabs zichtbaar
 - [x] Na browser restart: workspaces en hun SVG icons zijn behouden
 - [x] Opera-style icon picker: 24 SVG icons in 6-col grid (v0.26.0)

@@ -1050,6 +1050,16 @@
       }
     }
 
+    async function pbRefreshItems(boardId) {
+      if (!boardId || !document.getElementById('pb-item-list')) return;
+      try {
+        const res = await fetch(`http://localhost:8765/pinboards/${boardId}/items`, { headers: { Authorization: `Bearer ${TOKEN}` } });
+        const data = await res.json();
+        pbRenderItems(data.items || []);
+        await pbUpdateBoardSwitcher(boardId);
+      } catch { /* ignore */ }
+    }
+
     async function pbUpdateBoardSwitcher(currentId) {
       try {
         const res = await fetch('http://localhost:8765/pinboards', { headers: { Authorization: `Bearer ${TOKEN}` } });
@@ -1703,6 +1713,15 @@
           filterTabBar();
         });
       }
+
+      // Refresh pinboard view when a pin is added via page context menu
+      if (window.tandem && window.tandem.onPinboardItemAdded) {
+        window.tandem.onPinboardItemAdded((boardId) => {
+          if (pbState.currentBoardId === boardId) {
+            setTimeout(() => pbRefreshItems(boardId), 800); // delay for OG fetch
+          }
+        });
+      }
     }
 
     // === TAB CONTEXT MENU (custom DOM, no IPC) ===
@@ -1858,6 +1877,10 @@
               if (tabEl) {
                 tabEl.classList.add('pin-flash');
                 setTimeout(() => tabEl.classList.remove('pin-flash'), 700);
+              }
+              // Refresh board if it's currently open
+              if (pbState.currentBoardId === board.id) {
+                setTimeout(() => pbRefreshItems(board.id), 800); // slight delay for OG fetch
               }
             });
             pbSub.appendChild(si);

@@ -235,6 +235,12 @@ contextBridge.exposeInMainWorld('tandem', {
     return () => ipcRenderer.removeListener('workspace-switched', handler);
   },
 
+  onPinboardItemAdded: (callback: (boardId: string) => void) => {
+    const handler = (_event: Electron.IpcRendererEvent, boardId: string) => callback(boardId);
+    ipcRenderer.on('pinboard-item-added', handler);
+    return () => ipcRenderer.removeListener('pinboard-item-added', handler);
+  },
+
   // Chrome-style compact title bar: platform detection and window controls
   getPlatform: () => process.platform,
   showAppMenu: () => ipcRenderer.send('show-app-menu'),

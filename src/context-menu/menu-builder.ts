@@ -642,18 +642,23 @@ export class ContextMenuBuilder {
 
     this.addSeparator(menu);
 
+    const notifyAdded = (boardId: string) => {
+      this.deps.win.webContents.send('pinboard-item-added', boardId);
+    };
+
     // Save page to Pinboard (always available)
     menu.append(new MenuItem({
       label: 'Save Page to Pinboard',
       submenu: boards.map(board => ({
         label: `${board.emoji} ${board.name}`,
-        click: () => {
-          this.deps.pinboardManager.addItem(board.id, {
+        click: async () => {
+          await this.deps.pinboardManager.addItem(board.id, {
             type: 'link',
             url: params.pageURL,
             title: wc.getTitle(),
             sourceUrl: params.pageURL,
           });
+          notifyAdded(board.id);
         }
       }))
     }));
@@ -664,13 +669,14 @@ export class ContextMenuBuilder {
         label: 'Save Link to Pinboard',
         submenu: boards.map(board => ({
           label: `${board.emoji} ${board.name}`,
-          click: () => {
-            this.deps.pinboardManager.addItem(board.id, {
+          click: async () => {
+            await this.deps.pinboardManager.addItem(board.id, {
               type: 'link',
               url: params.linkURL,
               title: params.linkText || params.linkURL,
               sourceUrl: params.pageURL,
             });
+            notifyAdded(board.id);
           }
         }))
       }));
@@ -682,12 +688,13 @@ export class ContextMenuBuilder {
         label: 'Save Image to Pinboard',
         submenu: boards.map(board => ({
           label: `${board.emoji} ${board.name}`,
-          click: () => {
-            this.deps.pinboardManager.addItem(board.id, {
+          click: async () => {
+            await this.deps.pinboardManager.addItem(board.id, {
               type: 'image',
               url: params.srcURL,
               sourceUrl: params.pageURL,
             });
+            notifyAdded(board.id);
           }
         }))
       }));
@@ -699,12 +706,13 @@ export class ContextMenuBuilder {
         label: 'Save Selection to Pinboard',
         submenu: boards.map(board => ({
           label: `${board.emoji} ${board.name}`,
-          click: () => {
-            this.deps.pinboardManager.addItem(board.id, {
+          click: async () => {
+            await this.deps.pinboardManager.addItem(board.id, {
               type: 'quote',
               content: params.selectionText,
               sourceUrl: params.pageURL,
             });
+            notifyAdded(board.id);
           }
         }))
       }));

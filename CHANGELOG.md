@@ -2,6 +2,18 @@
 
 All notable changes to Tandem Browser will be documented in this file.
 
+## [v0.41.5] - 2026-03-02
+
+- fix: prevent crash on hamburger menu click
+
+Issues fixed:
+- Remove require() calls in IPC handler (caused hang)
+- Use proper imports at top level
+- Add 'as const' to role types
+- Import shell from electron
+
+The dynamic require() calls were blocking the event loop
+
 ## [v0.41.4] - 2026-03-02
 
 - fix: TypeScript error in setWindowOpenHandler

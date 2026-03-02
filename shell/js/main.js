@@ -454,8 +454,7 @@
         } else if (action === 'open-history') {
           openHistoryPage();
         } else if (action === 'open-bookmarks') {
-          const shellPath = window.location.href.replace(/\/[^/]*$/, '');
-          window.tandem.newTab(shellPath + '/bookmarks.html');
+          if (typeof ocSidebar !== 'undefined') ocSidebar.activateItem('bookmarks');
         } else if (action === 'show-about') {
           renderAboutPanel();
          } else if (action === 'show-shortcuts') {

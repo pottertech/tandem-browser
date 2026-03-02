@@ -1,5 +1,5 @@
 import type { BrowserWindow} from 'electron';
-import { app, Menu, BrowserWindow as BW } from 'electron';
+import { app, Menu, BrowserWindow as BW, shell } from 'electron';
 import path from 'path';
 import type { TabManager } from '../tabs/manager';
 import type { PanelManager } from '../panel/manager';
@@ -50,7 +50,7 @@ export function buildAppMenu(deps: MenuDeps): void {
             aboutWindow.setMenu(null);
             // Open external links in system browser
             aboutWindow.webContents.setWindowOpenHandler(({ url }: { url: string }) => {
-              require('electron').shell.openExternal(url);
+              shell.openExternal(url);
               return { action: 'deny' };
             });
             void aboutWindow.loadFile(path.join(__dirname, '..', '..', 'shell', 'about.html'));

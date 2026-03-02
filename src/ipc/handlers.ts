@@ -1,5 +1,5 @@
 import type { BrowserWindow } from 'electron';
-import { ipcMain, Menu } from 'electron';
+import { ipcMain, Menu, BrowserWindow, shell } from 'electron';
 import path from 'path';
 import type { TabManager } from '../tabs/manager';
 import type { PanelManager } from '../panel/manager';
@@ -408,7 +408,7 @@ export function registerIpcHandlers(deps: IpcDeps): void {
           {
             label: 'About Tandem Browser',
             click: () => {
-              const { BrowserWindow } = require('electron');
+
               const aboutWindow = new BrowserWindow({
                 width: 600,
                 height: 650,
@@ -426,16 +426,16 @@ export function registerIpcHandlers(deps: IpcDeps): void {
               aboutWindow.setMenu(null);
               // Open external links in system browser
               aboutWindow.webContents.setWindowOpenHandler(({ url }: { url: string }) => {
-                require('electron').shell.openExternal(url);
+                shell.openExternal(url);
                 return { action: 'deny' };
               });
-              void aboutWindow.loadFile(require('path').join(__dirname, '..', '..', 'shell', 'about.html'));
+              void aboutWindow.loadFile(path.join(__dirname, '..', '..', 'shell', 'about.html'));
             },
           },
           { type: 'separator' },
           { label: 'Settings', accelerator: 'CmdOrCtrl+,', click: () => send('open-settings') },
           { type: 'separator' },
-          { label: 'Quit', role: 'quit' },
+          { label: 'Quit', role: 'quit' as const },
         ],
       },
       {
@@ -453,13 +453,13 @@ export function registerIpcHandlers(deps: IpcDeps): void {
       {
         label: 'Edit',
         submenu: [
-          { role: 'undo' },
-          { role: 'redo' },
+          { role: 'undo' as const },
+          { role: 'redo' as const },
           { type: 'separator' },
-          { role: 'cut' },
-          { role: 'copy' },
-          { role: 'paste' },
-          { role: 'selectAll' },
+          { role: 'cut' as const },
+          { role: 'copy' as const },
+          { role: 'paste' as const },
+          { role: 'selectAll' as const },
         ],
       },
       {
@@ -471,7 +471,7 @@ export function registerIpcHandlers(deps: IpcDeps): void {
           { label: 'Zoom Out', accelerator: 'CmdOrCtrl+-', click: () => send('zoom-out') },
           { label: 'Reset Zoom', accelerator: 'CmdOrCtrl+0', click: () => send('zoom-reset') },
           { type: 'separator' },
-          { role: 'togglefullscreen' },
+          { role: 'togglefullscreen' as const },
         ],
       },
       {
@@ -487,8 +487,8 @@ export function registerIpcHandlers(deps: IpcDeps): void {
       {
         label: 'Window',
         submenu: [
-          { role: 'minimize' },
-          { role: 'close' },
+          { role: 'minimize' as const },
+          { role: 'close' as const },
         ],
       },
       {

@@ -2,6 +2,12 @@
 
 All notable changes to Tandem Browser will be documented in this file.
 
+## [v0.41.2] - 2026-03-02
+
+- fix: use _win instead of win in window control handlers
+
+TypeScript error: variable is destructured as 'win: _win'
+
 ## [v0.41.1] - 2026-03-02
 
 - fix: pinboard sync not loading on fresh device

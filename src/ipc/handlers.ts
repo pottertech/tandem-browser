@@ -403,13 +403,57 @@ export function registerIpcHandlers(deps: IpcDeps): void {
     
     const template: Electron.MenuItemConstructorOptions[] = [
       {
+        label: 'Tandem',
+        submenu: [
+          {
+            label: 'About Tandem Browser',
+            click: () => {
+              const { BrowserWindow } = require('electron');
+              const aboutWindow = new BrowserWindow({
+                width: 600,
+                height: 650,
+                modal: true,
+                parent: _win,
+                resizable: false,
+                maximizable: false,
+                minimizable: false,
+                webPreferences: {
+                  nodeIntegration: false,
+                  contextIsolation: true,
+                },
+              });
+              aboutWindow.setMenu(null);
+              void aboutWindow.loadFile(require('path').join(__dirname, '..', 'shell', 'about.html'));
+            },
+          },
+          { type: 'separator' },
+          { label: 'Settings', accelerator: 'CmdOrCtrl+,', click: () => send('open-settings') },
+          { type: 'separator' },
+          { label: 'Quit', role: 'quit' },
+        ],
+      },
+      {
         label: 'File',
         submenu: [
           { label: 'New Tab', accelerator: 'CmdOrCtrl+T', click: () => send('new-tab') },
-          { type: 'separator' },
           { label: 'Close Tab', accelerator: 'CmdOrCtrl+W', click: () => send('close-tab') },
           { type: 'separator' },
-          { label: 'Quit', role: 'quit' },
+          { label: 'Bookmark Page', accelerator: 'CmdOrCtrl+D', click: () => send('bookmark-page') },
+          { label: 'Bookmark Manager', click: () => send('open-bookmarks') },
+          { label: 'History', accelerator: 'CmdOrCtrl+Y', click: () => send('open-history') },
+          { label: 'Find in Page', accelerator: 'CmdOrCtrl+F', click: () => send('find-in-page') },
+        ],
+      },
+      {
+        label: 'Edit',
+        submenu: [
+          { role: 'undo' },
+          { role: 'redo' },
+          { type: 'separator' },
+          { role: 'cut' },
+          { role: 'copy' },
+          { role: 'paste' },
+          { role: 'selectAll' },
         ],
       },
       {
@@ -420,14 +464,25 @@ export function registerIpcHandlers(deps: IpcDeps): void {
           { label: 'Zoom In', accelerator: 'CmdOrCtrl+=', click: () => send('zoom-in') },
           { label: 'Zoom Out', accelerator: 'CmdOrCtrl+-', click: () => send('zoom-out') },
           { label: 'Reset Zoom', accelerator: 'CmdOrCtrl+0', click: () => send('zoom-reset') },
+          { type: 'separator' },
+          { role: 'togglefullscreen' },
         ],
       },
       {
-        label: 'Tools',
+        label: 'Wingman',
         submenu: [
-          { label: 'Wingman Panel', accelerator: 'CmdOrCtrl+K', click: () => send('toggle-panel') },
+          { label: 'Toggle Panel', accelerator: 'CmdOrCtrl+K', click: () => send('toggle-panel') },
+          { label: 'Voice Input', accelerator: 'CmdOrCtrl+Shift+M', click: () => send('voice-input') },
+          { type: 'separator' },
           { label: 'Draw Mode', accelerator: 'CmdOrCtrl+Shift+D', click: () => send('toggle-draw') },
-          { label: 'Screenshot', accelerator: 'CmdOrCtrl+Shift+S', click: () => send('screenshot') },
+          { label: 'Quick Screenshot', accelerator: 'CmdOrCtrl+Shift+S', click: () => send('quick-screenshot') },
+        ],
+      },
+      {
+        label: 'Window',
+        submenu: [
+          { role: 'minimize' },
+          { role: 'close' },
         ],
       },
       {

@@ -183,6 +183,15 @@ function handlePersistentConnection(ws: WebSocket, binary: string, _extensionId:
     if (ws.readyState === WebSocket.OPEN) ws.close(1011, 'Native process exited');
   });
 
+  // Send an initial empty message to BrowserSupport immediately on spawn.
+  // BrowserSupport has a startup timeout (~100ms): if stdin has no data when
+  // it starts reading, it exits with code 1. Sending any valid native messaging
+  // frame prevents this timeout. The empty object triggers a BrowserVerification
+  // response which the extension handles to initiate the auth/account flow.
+  try {
+    proc.stdin.write(writeNativeMessage({}));
+  } catch (_) {}
+
   // WebSocket → Native
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ws.on('message', (data: any) => {

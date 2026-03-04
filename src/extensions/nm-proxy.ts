@@ -238,12 +238,19 @@ export class NativeMessagingProxy {
    * No auth required — localhost only.
    */
   startWebSocket(httpServer: HttpServer): void {
-    const wss = new WebSocketServer({
-      server: httpServer,
-      path: '/extensions/native-message/ws',
-      verifyClient: (_info: { req: IncomingMessage }, cb: (result: boolean) => void) => {
-        cb(true); // localhost only (server binds to 127.0.0.1)
-      },
+    // Use noServer:true + manual upgrade handling to avoid conflicts with other
+    // WebSocketServer instances (e.g. GatekeeperWebSocket) on the same http.Server.
+    // Multiple WSS instances attached via server:httpServer can interfere — the first
+    // one to handle an upgrade event may return 400 for paths it doesn't own.
+    const wss = new WebSocketServer({ noServer: true });
+
+    httpServer.on('upgrade', (req: IncomingMessage, socket, head) => {
+      const url = new URL(req.url ?? '', 'http://localhost');
+      if (url.pathname !== '/extensions/native-message/ws') return; // not ours
+
+      wss.handleUpgrade(req, socket, head, (ws: WebSocket) => {
+        wss.emit('connection', ws, req);
+      });
     });
 
     wss.on('connection', (ws: WebSocket, req: IncomingMessage) => {

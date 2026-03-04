@@ -39,8 +39,16 @@ const TANDEM_EXTENSION_ID = 'chdppelbdlmkldaobdpeaemleeajiodj';
 // 1Password validates extension IDs against its own internal list (not just
 // the Chrome manifest's allowed_origins). The CWS ID is in 1Password's
 // internal list; our Tandem-extracted ID is not.
-// The actual communication still uses the Tandem extension (via polyfill proxy).
 const ONEPW_CHROME_ORIGIN = 'chrome-extension://aeblfdkhhhdcdjpifhhbdiojplfjncoa/';
+
+// Relay binary inside our signed Tandem Browser.app bundle.
+// BrowserSupport checks its parent process's code signature to determine the
+// browser identity. When spawned from Electron dev (ad-hoc signed, identifier
+// "Electron"), 1Password returns browser_state:{type:"Unknown"} and exits 1.
+// When spawned from a process inside a properly-signed .app with bundle ID
+// com.tandem.browser (which we registered via "Add Browser" + Touch ID),
+// 1Password should return an authorized or trusted browser state.
+const NM_RELAY = '/Applications/Tandem Browser.app/Contents/MacOS/nm-relay';
 
 // Directories to search for native messaging manifests (macOS)
 const MANIFEST_DIRS = [
@@ -99,11 +107,17 @@ function writeNativeMessage(msg: unknown): Buffer {
 
 function sendOneShot(binary: string, _extensionId: string, message: unknown): Promise<unknown> {
   return new Promise((resolve, reject) => {
-    // Use the official CWS origin — BrowserSupport validates against its own
-    // internal extension ID list; Tandem's extracted ID is not in that list.
-    const origin = ONEPW_CHROME_ORIGIN;
-    const proc = spawn(binary, [origin], {
+    // Spawn via nm-relay (properly signed com.tandem.browser binary inside
+    // Tandem Browser.app) so BrowserSupport sees a recognized parent process.
+    // Use the CWS origin — BrowserSupport validates extension IDs against its
+    // own internal list; our Tandem-extracted ID is not in that list.
+    const relayAvailable = fs.existsSync(NM_RELAY);
+    const [cmd, cmdArgs] = relayAvailable
+      ? [NM_RELAY, [binary, ONEPW_CHROME_ORIGIN]]
+      : [binary, [ONEPW_CHROME_ORIGIN]];
+    const proc = spawn(cmd, cmdArgs, {
       stdio: ['pipe', 'pipe', 'pipe'],
+      env: process.env,
     });
 
     let outBuf = Buffer.alloc(0);
@@ -145,15 +159,16 @@ function sendOneShot(binary: string, _extensionId: string, message: unknown): Pr
 // ─── Persistent port: connectNative ──────────────────────────────────────────
 
 function handlePersistentConnection(ws: WebSocket, binary: string, _extensionId: string, host: string): void {
-  // Use the official CWS origin — BrowserSupport validates against its own
-  // internal extension ID list; Tandem's extracted ID is not in that list.
-  const origin = ONEPW_CHROME_ORIGIN;
-  const proc = spawn(binary, [origin], {
+  // Spawn via nm-relay (properly signed com.tandem.browser binary inside
+  // Tandem Browser.app) so BrowserSupport sees a recognized parent process.
+  const relayAvailable = fs.existsSync(NM_RELAY);
+  const [cmd, cmdArgs] = relayAvailable
+    ? [NM_RELAY, [binary, ONEPW_CHROME_ORIGIN]]
+    : [binary, [ONEPW_CHROME_ORIGIN]];
+  log.info(`🔌 NM "${host}" spawning via ${relayAvailable ? 'nm-relay (signed)' : 'direct (unsigned)'}`);
+  const proc = spawn(cmd, cmdArgs, {
     stdio: ['pipe', 'pipe', 'pipe'],
-    // Pass full environment so BrowserSupport can find 1Password resources.
-    // detached:true removes it from Electron's process group to avoid SIGHUP.
     env: process.env,
-    detached: false,
   });
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -150,14 +150,19 @@ function handlePersistentConnection(ws: WebSocket, binary: string, _extensionId:
   const origin = ONEPW_CHROME_ORIGIN;
   const proc = spawn(binary, [origin], {
     stdio: ['pipe', 'pipe', 'pipe'],
+    // Pass full environment so BrowserSupport can find 1Password resources.
+    // detached:true removes it from Electron's process group to avoid SIGHUP.
+    env: process.env,
+    detached: false,
   });
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let outBuf: any = Buffer.alloc(0);
 
-  // Native → WebSocket
+  // Native → WebSocket (with raw debug logging)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   proc.stdout.on('data', (chunk: any) => {
+    log.info(`🔌 NM "${host}" stdout raw (${(chunk as Buffer).length}B): ${(chunk as Buffer).slice(4).toString('utf-8').slice(0, 300)}`);
     outBuf = Buffer.concat([outBuf, chunk]);
     let result = readNativeMessage(outBuf);
     while (result) {
@@ -183,20 +188,12 @@ function handlePersistentConnection(ws: WebSocket, binary: string, _extensionId:
     if (ws.readyState === WebSocket.OPEN) ws.close(1011, 'Native process exited');
   });
 
-  // Send an initial empty message to BrowserSupport immediately on spawn.
-  // BrowserSupport has a startup timeout (~100ms): if stdin has no data when
-  // it starts reading, it exits with code 1. Sending any valid native messaging
-  // frame prevents this timeout. The empty object triggers a BrowserVerification
-  // response which the extension handles to initiate the auth/account flow.
-  try {
-    proc.stdin.write(writeNativeMessage({}));
-  } catch (_) {}
-
-  // WebSocket → Native
+  // WebSocket → Native: relay extension messages to BrowserSupport stdin
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ws.on('message', (data: any) => {
     try {
       const msg = JSON.parse(data.toString()) as unknown;
+      log.info(`🔌 NM "${host}" WS→stdin: ${JSON.stringify(msg).slice(0, 200)}`);
       proc.stdin.write(writeNativeMessage(msg));
     } catch (_) {
       log.warn(`⚠️ NM "${host}" invalid WS message`);

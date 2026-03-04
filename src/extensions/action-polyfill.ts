@@ -305,7 +305,28 @@ export class ActionPolyfill {
           log.info(`🩹 Patched browser.action.onClicked guard for ${manifest.name || cwsId}`);
         }
 
-        // Patch 3: chrome.webNavigation — module-level event listener registration at SW
+        // Patch 3: browser.windows.WINDOW_ID_NONE / browser.tabs.TAB_ID_NONE — module-level
+        // var declarations read these constants directly at SW startup:
+        //   Hce=browser.windows.WINDOW_ID_NONE
+        //   zce={sourceWindowId:browser.windows.WINDOW_ID_NONE,popupWindowId:browser.tabs.TAB_ID_NONE}
+        // browser.windows is undefined in Electron. WINDOW_ID_NONE and TAB_ID_NONE are both
+        // standard Chrome constants equal to -1. Use nullish coalescing to fall back to -1.
+        // Anchored to 1Password-specific var names Hce / Nce / zce / sourceWindowId.
+        const winIdPattern = 'Hce=browser.windows.WINDOW_ID_NONE,Nce';
+        const winIdPatch   = 'Hce=(browser.windows?.WINDOW_ID_NONE??-1),Nce';
+        if (existing.includes(winIdPattern) && !existing.includes(winIdPatch)) {
+          existing = existing.replace(winIdPattern, winIdPatch);
+          log.info(`🩹 Patched browser.windows.WINDOW_ID_NONE for ${manifest.name || cwsId}`);
+        }
+
+        const zcePattern = 'zce={sourceWindowId:browser.windows.WINDOW_ID_NONE,popupWindowId:browser.tabs.TAB_ID_NONE}';
+        const zcePatch   = 'zce={sourceWindowId:(browser.windows?.WINDOW_ID_NONE??-1),popupWindowId:(browser.tabs?.TAB_ID_NONE??-1)}';
+        if (existing.includes(zcePattern) && !existing.includes(zcePatch)) {
+          existing = existing.replace(zcePattern, zcePatch);
+          log.info(`🩹 Patched zce WINDOW_ID_NONE/TAB_ID_NONE for ${manifest.name || cwsId}`);
+        }
+
+        // Patch 4: chrome.webNavigation — module-level event listener registration at SW
         // startup crashes because chrome.webNavigation is undefined in Electron (the
         // 'webNavigation' permission is listed as unknown at extension load time).
         // Only the two module-init calls are patched; all other webNavigation uses are inside

@@ -2,6 +2,19 @@
 
 All notable changes to Tandem Browser will be documented in this file.
 
+## [v0.44.53] - 2026-03-07
+
+- chore(repo): remove local artifacts and stale release metadata
+
+Removed tracked local Playwright console logs, ad-hoc root-level scratch test
+files, and an unused screenshot asset from the repository root so the workspace
+is cleaner for future public release preparation.
+
+Updated top-level documentation to stop hardcoding stale version numbers and
+aligned release-facing references to point at `package.json` and `CHANGELOG.md`
+instead. Also refreshed the architecture overview in `PROJECT.md` to reference
+Electron 40.
+
 ## [v0.44.52] - 2026-03-07
 
 - fix(extensions): add storage.session + notification state shims for 1Password

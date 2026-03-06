@@ -5,7 +5,7 @@
 
 ---
 
-## Wat er gebouwd is (v0.1.0 – v0.10.0)
+## Wat er gebouwd is
 
 | Versie | Subsysteem | Regels |
 |--------|-----------|--------|

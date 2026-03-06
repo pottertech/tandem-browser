@@ -13,7 +13,7 @@ The security layer exists because when an AI has access to your browser, your th
 Data stays local. Sessions are isolated. Nothing leaves the machine through Tandem without going through a filter first.
 
 **GitHub:** `hydro13/tandem-browser` (private)  
-**Current version:** v0.29.0  
+**Current version:** see `package.json` and `CHANGELOG.md`  
 **Started:** February 11, 2026
 
 ---
@@ -30,7 +30,7 @@ In browser terms: the human handles ambiguity, judgment calls, authentication, a
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│  Tandem Browser (Electron v33)                                   │
+│  Tandem Browser (Electron 40)                                    │
 │                                                                   │
 │  ┌──────────────────────────┐  ┌───────────────────────────┐    │
 │  │  Sidebar (shell)          │  │  Copilot Panel (shell)    │    │

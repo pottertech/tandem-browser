@@ -14,7 +14,7 @@ Je bent een developer agent die werkt aan **Tandem Browser** — een Electron br
 - **Filosofie:** Lokaal, privacy-first, geen cloud dependencies
 - **Omvang:** ~28,750 regels TypeScript (81 bestanden), ~10,190 regels HTML/JS (shell/), 170+ API endpoints, 38 src modules
 - **Tests:** 124 geautomatiseerd (51 security + 73 extensions) via Vitest
-- **Versie:** v0.10.0 — zie CHANGELOG.md voor volledige historie
+- **Versioning:** See `package.json` and `CHANGELOG.md` for the current release and full history
 
 ## Projectstructuur
 

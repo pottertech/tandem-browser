@@ -1,6 +1,7 @@
 # Tandem Browser
 
-**Version 0.15.0** · Human-AI symbiotic browser with built-in security intelligence
+Human-AI symbiotic browser with built-in security intelligence.
+Current release: see `package.json` and `CHANGELOG.md`.
 
 > The browser where you and your AI work as one — and where external content is hostile by default.
 

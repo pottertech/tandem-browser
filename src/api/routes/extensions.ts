@@ -1,4 +1,5 @@
 import type { Router, Request, Response } from 'express';
+import { webContents } from 'electron';
 import path from 'path';
 import fs from 'fs';
 import type { RouteContext } from '../context';
@@ -9,6 +10,32 @@ import { handleRouteError } from '../../utils/errors';
 import { createLogger } from '../../utils/logger';
 
 const log = createLogger('ExtensionRoutes');
+
+interface ExtensionFrameInfo {
+  frameId: number;
+  parentFrameId: number;
+  processId: number;
+  url: string;
+  errorOccurred: boolean;
+}
+
+function getExtensionFramesForWebContents(tabId: number): ExtensionFrameInfo[] {
+  const wc = webContents.fromId(tabId);
+  if (!wc || wc.isDestroyed()) {
+    return [];
+  }
+
+  const frames = wc.mainFrame.framesInSubtree;
+  return frames
+    .filter(frame => !frame.isDestroyed() && !frame.detached)
+    .map(frame => ({
+      frameId: frame.routingId,
+      parentFrameId: frame.parent ? frame.parent.routingId : -1,
+      processId: frame.processId,
+      url: frame.url || '',
+      errorOccurred: false,
+    }));
+}
 
 export function registerExtensionRoutes(router: Router, ctx: RouteContext): void {
   // ═══════════════════════════════════════════════
@@ -262,6 +289,42 @@ export function registerExtensionRoutes(router: Router, ctx: RouteContext): void
           windowId: 1,
         },
       });
+    } catch (e) {
+      handleRouteError(res, e);
+    }
+  });
+
+  // GET /extensions/web-navigation/frames?tabId=123
+  // Provides a Chrome-like webNavigation.getAllFrames() response for the active webview.
+  router.get('/extensions/web-navigation/frames', (req: Request, res: Response) => {
+    try {
+      const rawTabId = typeof req.query.tabId === 'string' ? Number(req.query.tabId) : NaN;
+      const activeTab = ctx.tabManager.getActiveTab();
+      const tabId = Number.isFinite(rawTabId) ? rawTabId : activeTab?.webContentsId;
+      if (!tabId) {
+        res.json({ frames: [] });
+        return;
+      }
+
+      res.json({ frames: getExtensionFramesForWebContents(tabId) });
+    } catch (e) {
+      handleRouteError(res, e);
+    }
+  });
+
+  // GET /extensions/web-navigation/frame?tabId=123&frameId=456
+  // Provides a Chrome-like webNavigation.getFrame() response for a specific frame.
+  router.get('/extensions/web-navigation/frame', (req: Request, res: Response) => {
+    try {
+      const rawTabId = typeof req.query.tabId === 'string' ? Number(req.query.tabId) : NaN;
+      const rawFrameId = typeof req.query.frameId === 'string' ? Number(req.query.frameId) : NaN;
+      if (!Number.isFinite(rawTabId) || !Number.isFinite(rawFrameId)) {
+        res.status(400).json({ error: 'tabId and frameId are required numeric query params' });
+        return;
+      }
+
+      const frame = getExtensionFramesForWebContents(rawTabId).find(entry => entry.frameId === rawFrameId) ?? null;
+      res.json({ frame });
     } catch (e) {
       handleRouteError(res, e);
     }

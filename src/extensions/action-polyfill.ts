@@ -247,16 +247,44 @@ function generatePolyfillScript(cwsId: string, apiPort: number): string {
     : undefined;
 
   /*
-   * webNavigation stub: chrome.webNavigation is undefined in Electron (unknown permission).
-   * The extension calls getAllFrames(), getFrame(), etc. for autofill frame detection.
-   * Provide a no-op stub so all calls silently return empty results instead of throwing.
+   * webNavigation bridge: Electron does not expose chrome.webNavigation to extensions,
+   * but 1Password needs getAllFrames()/getFrame() for autofill frame detection.
+   * Bridge those calls through Tandem's local API using WebFrameMain frame data.
    */
+  function __tandemFetchFrames(tabId) {
+    return fetch('http://127.0.0.1:' + API_PORT + '/extensions/web-navigation/frames?tabId=' + encodeURIComponent(String(tabId)))
+      .then(function(r) { return r.json(); })
+      .then(function(d) { return d && Array.isArray(d.frames) ? d.frames : []; })
+      .catch(function() { return []; });
+  }
+  function __tandemFetchFrame(tabId, frameId) {
+    return fetch(
+      'http://127.0.0.1:' + API_PORT + '/extensions/web-navigation/frame?tabId=' +
+      encodeURIComponent(String(tabId)) + '&frameId=' + encodeURIComponent(String(frameId))
+    )
+      .then(function(r) { return r.json(); })
+      .then(function(d) { return d && d.frame ? d.frame : null; })
+      .catch(function() { return null; });
+  }
   var webNavStub = __tc.webNavigation || {
-    getAllFrames: function(opts, cb) { if (cb) cb([]); return Promise.resolve([]); },
-    getFrame: function(opts, cb) { if (cb) cb(null); return Promise.resolve(null); },
+    getAllFrames: function(opts, cb) {
+      var tabId = opts && opts.tabId;
+      var p = __tandemFetchFrames(tabId);
+      if (cb) p.then(cb);
+      return p;
+    },
+    getFrame: function(opts, cb) {
+      var tabId = opts && opts.tabId;
+      var frameId = opts && opts.frameId;
+      var p = __tandemFetchFrame(tabId, frameId);
+      if (cb) p.then(cb);
+      return p;
+    },
     onCommitted: { addListener: function() {}, removeListener: function() {}, hasListener: function() { return false; } },
+    onBeforeNavigate: { addListener: function() {}, removeListener: function() {}, hasListener: function() { return false; } },
     onDOMContentLoaded: { addListener: function() {}, removeListener: function() {}, hasListener: function() { return false; } },
     onCompleted: { addListener: function() {}, removeListener: function() {}, hasListener: function() { return false; } },
+    onCreatedNavigationTarget: { addListener: function() {}, removeListener: function() {}, hasListener: function() { return false; } },
     onHistoryStateUpdated: { addListener: function() {}, removeListener: function() {}, hasListener: function() { return false; } }
   };
 

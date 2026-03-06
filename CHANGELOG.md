@@ -2,6 +2,19 @@
 
 All notable changes to Tandem Browser will be documented in this file.
 
+## [v0.44.50] - 2026-03-07
+
+- fix(extensions): bridge webNavigation frame data for 1Password autofill
+
+Added `/extensions/web-navigation/frames` and `/extensions/web-navigation/frame`
+so extension service workers can query the real frame tree of the active webview
+via Electron `WebFrameMain` data instead of getting an empty `webNavigation`
+stub.
+
+Updated the 1Password action polyfill to route `chrome.webNavigation.getAllFrames()`
+and `getFrame()` through those endpoints, which should let the extension detect
+sign-in frames and target the correct input fields for autofill.
+
 ## [v0.44.49] - 2026-03-07
 
 - chore(about): simplify About page — remove Dutch quote and Wingman subtitle, update tagline to "Built for your AI. Security included.", remove team credits line

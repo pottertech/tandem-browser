@@ -200,7 +200,8 @@ export function registerBrowserRoutes(router: Router, ctx: RouteContext): void {
       return;
     }
     try {
-      const wc = await getActiveWC(ctx);
+      const tabId = req.body.tabId as string | undefined;
+      const wc = tabId ? ctx.tabManager.getWebContents(tabId) : await getActiveWC(ctx);
       if (!wc) { res.status(500).json({ error: 'No active tab' }); return; }
       const timeout = new Promise<never>((_, reject) =>
         setTimeout(() => reject(new Error('Execution timed out')), DEFAULT_TIMEOUT_MS)

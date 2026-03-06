@@ -92,7 +92,9 @@ export class PanelManager {
       this.activityLog = this.activityLog.slice(-this.maxEvents);
     }
     // Push to renderer for real-time display
-    this.win.webContents.send('activity-event', event);
+    if (this.win && !this.win.isDestroyed() && !this.win.webContents.isDestroyed()) {
+      this.win.webContents.send('activity-event', event);
+    }
     return event;
   }
 
@@ -131,7 +133,9 @@ export class PanelManager {
     };
     this.chatMessages.push(msg);
     this.saveChatHistory();
-    this.win.webContents.send('chat-message', msg);
+    if (this.win && !this.win.isDestroyed() && !this.win.webContents.isDestroyed()) {
+      this.win.webContents.send('chat-message', msg);
+    }
     // Clear typing indicator when wingman sends a message
     if ((from === 'wingman' || from === 'kees') && this.wingmanTyping) {
       this.setWingmanTyping(false);
@@ -192,7 +196,9 @@ export class PanelManager {
   /** Set Wingman typing indicator */
   setWingmanTyping(typing: boolean): void {
     this.wingmanTyping = typing;
-    this.win.webContents.send('wingman-typing', { typing });
+    if (this.win && !this.win.isDestroyed() && !this.win.webContents.isDestroyed()) {
+      this.win.webContents.send('wingman-typing', { typing });
+    }
   }
 
   /** @deprecated Use setWingmanTyping */
@@ -213,13 +219,17 @@ export class PanelManager {
   /** Toggle panel open/closed */
   togglePanel(open?: boolean): boolean {
     this.panelOpen = open !== undefined ? open : !this.panelOpen;
-    this.win.webContents.send('panel-toggle', { open: this.panelOpen });
+    if (this.win && !this.win.isDestroyed() && !this.win.webContents.isDestroyed()) {
+      this.win.webContents.send('panel-toggle', { open: this.panelOpen });
+    }
     return this.panelOpen;
   }
 
   /** Notify UI about live mode change */
   sendLiveModeChanged(enabled: boolean): void {
-    this.win.webContents.send('live-mode-changed', { enabled });
+    if (this.win && !this.win.isDestroyed() && !this.win.webContents.isDestroyed()) {
+      this.win.webContents.send('live-mode-changed', { enabled });
+    }
   }
 
   /** Get panel state */

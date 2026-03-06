@@ -123,6 +123,9 @@ export class TabManager {
     // If createTab() fails (e.g. dom-ready timeout), the renderer may have already
     // added a partial entry (webview + tabEl + tabs Map entry). We clean it up here
     // to prevent it from becoming an uncloseable zombie in the renderer's tab strip.
+    if (!this.win || this.win.isDestroyed() || this.win.webContents.isDestroyed()) {
+      throw new Error('TabManager: main window has been destroyed, cannot open tab');
+    }
     let webContentsId: number;
     try {
       webContentsId = await this.win.webContents.executeJavaScript(`

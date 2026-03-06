@@ -2,6 +2,10 @@
 
 All notable changes to Tandem Browser will be documented in this file.
 
+## [v0.44.49] - 2026-03-07
+
+- chore(about): simplify About page — remove Dutch quote and Wingman subtitle, update tagline to "Built for your AI. Security included.", remove team credits line
+
 ## [v0.44.48] - 2026-03-06
 
 - fix(extensions): add 1password7 NM host + migrate to session.extensions.loadExtension

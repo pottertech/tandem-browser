@@ -2,6 +2,21 @@
 
 All notable changes to Tandem Browser will be documented in this file.
 
+## [v0.44.52] - 2026-03-07
+
+- fix(extensions): add storage.session + notification state shims for 1Password
+
+Extended the 1Password action polyfill with a `chrome.storage.session` shim in
+the service worker, including `get`, `set`, `remove`, `clear`, and
+`storage.onChanged` support. This gives the extension an ephemeral runtime store
+for policy calculation and other short-lived state that Electron does not expose
+reliably in this context.
+
+Upgraded the notification stub from a pure no-op to an in-memory implementation
+that tracks created notifications and allows `update()` / `clear()` calls to
+succeed. This removes a class of `replaceNotification: messenger-error` failures
+when 1Password updates passkey and inline notification state.
+
 ## [v0.44.51] - 2026-03-07
 
 - fix(extensions): retry 1Password USO tab messages without frame targeting

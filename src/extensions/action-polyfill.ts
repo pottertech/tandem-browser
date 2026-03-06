@@ -41,11 +41,13 @@ function generatePolyfillScript(cwsId: string, apiPort: number): string {
   //   3. Rest of the module runs with chrome/browser = our proxy
   //   4. proxy.get('action') → returns our polyfill object
   return `
-/* Tandem chrome.action polyfill v8 — module-scope var shadow */
+/* Tandem chrome.action polyfill v9 — module-scope var shadow */
 ;(function() {
   var __tc = (typeof globalThis !== 'undefined' && globalThis.chrome) || (typeof self !== 'undefined' && self.chrome) || {};
   var CWS_ID = '${cwsId}';
   var API_PORT = ${apiPort};
+  var __tandemNotificationStore = {};
+  var __tandemSessionStorage = {};
 
   function makeEvent() {
     var listeners = [];
@@ -160,11 +162,140 @@ function generatePolyfillScript(cwsId: string, apiPort: number): string {
         onClicked:       makeEvent(),
         onButtonClicked: makeEvent(),
         onClosed:        makeEvent(),
-        create:  function(id, opts, cb) { if (typeof id === 'object') { cb = opts; } if (typeof cb === 'function') cb(id || ''); return Promise.resolve(id || ''); },
-        getAll:  function(cb) { if (typeof cb === 'function') cb({}); return Promise.resolve({}); },
-        clear:   function(id, cb) { if (typeof cb === 'function') cb(true); return Promise.resolve(true); },
-        update:  function(id, opts, cb) { if (typeof cb === 'function') cb(false); return Promise.resolve(false); }
+        create:  function(id, opts, cb) {
+          if (typeof id === 'object') { cb = opts; opts = id; id = ''; }
+          var finalId = id || ('tandem-notification-' + Date.now() + '-' + Math.floor(Math.random() * 100000));
+          __tandemNotificationStore[finalId] = opts || {};
+          if (typeof cb === 'function') cb(finalId);
+          return Promise.resolve(finalId);
+        },
+        getAll:  function(cb) {
+          var entries = {};
+          for (var key in __tandemNotificationStore) {
+            if (Object.prototype.hasOwnProperty.call(__tandemNotificationStore, key)) {
+              entries[key] = __tandemNotificationStore[key];
+            }
+          }
+          if (typeof cb === 'function') cb(entries);
+          return Promise.resolve(entries);
+        },
+        clear:   function(id, cb) {
+          var existed = Object.prototype.hasOwnProperty.call(__tandemNotificationStore, id);
+          delete __tandemNotificationStore[id];
+          if (typeof cb === 'function') cb(existed);
+          return Promise.resolve(existed);
+        },
+        update:  function(id, opts, cb) {
+          var existed = Object.prototype.hasOwnProperty.call(__tandemNotificationStore, id);
+          __tandemNotificationStore[id] = Object.assign({}, __tandemNotificationStore[id] || {}, opts || {});
+          if (typeof cb === 'function') cb(true);
+          return Promise.resolve(existed || true);
+        }
       };
+
+  /*
+   * chrome.storage.session stub — Electron does not expose this namespace in the
+   * extension service worker context, but 1Password uses it while calculating
+   * effective policies and other ephemeral runtime state.
+   */
+  function __tandemStorageNormalizeKeys(keys) {
+    if (keys === null || keys === undefined) return null;
+    if (Array.isArray(keys)) return keys;
+    if (typeof keys === 'string') return [keys];
+    if (typeof keys === 'object') return Object.keys(keys);
+    return [];
+  }
+  function __tandemStorageBuildResult(keys) {
+    if (keys === null) return Object.assign({}, __tandemSessionStorage);
+    var result = {};
+    if (Array.isArray(keys)) {
+      for (var i = 0; i < keys.length; i++) {
+        var key = keys[i];
+        if (Object.prototype.hasOwnProperty.call(__tandemSessionStorage, key)) {
+          result[key] = __tandemSessionStorage[key];
+        }
+      }
+      return result;
+    }
+    if (typeof keys === 'object') {
+      for (var fallbackKey in keys) {
+        if (!Object.prototype.hasOwnProperty.call(keys, fallbackKey)) continue;
+        result[fallbackKey] = Object.prototype.hasOwnProperty.call(__tandemSessionStorage, fallbackKey)
+          ? __tandemSessionStorage[fallbackKey]
+          : keys[fallbackKey];
+      }
+      return result;
+    }
+    return result;
+  }
+  var storageObj = __tc && __tc.storage ? __tc.storage : {};
+  if (!storageObj.local) {
+    storageObj.local = {
+      get: function(_keys, cb) { var data = {}; if (typeof cb === 'function') cb(data); return Promise.resolve(data); },
+      set: function(_items, cb) { if (typeof cb === 'function') cb(); return Promise.resolve(); },
+      remove: function(_keys, cb) { if (typeof cb === 'function') cb(); return Promise.resolve(); },
+      clear: function(cb) { if (typeof cb === 'function') cb(); return Promise.resolve(); }
+    };
+  }
+  if (!storageObj.sync) {
+    storageObj.sync = storageObj.local;
+  }
+  if (!storageObj.onChanged) {
+    storageObj.onChanged = makeEvent();
+  }
+  if (!storageObj.session) {
+    storageObj.session = {
+      get: function(keys, cb) {
+        var normalized = __tandemStorageNormalizeKeys(keys);
+        var lookup = normalized === null ? null : (Array.isArray(keys) || typeof keys === 'object' ? keys : normalized);
+        var result = __tandemStorageBuildResult(lookup);
+        if (typeof cb === 'function') cb(result);
+        return Promise.resolve(result);
+      },
+      set: function(items, cb) {
+        items = items && typeof items === 'object' ? items : {};
+        var changes = {};
+        for (var key in items) {
+          if (!Object.prototype.hasOwnProperty.call(items, key)) continue;
+          changes[key] = { oldValue: __tandemSessionStorage[key], newValue: items[key] };
+          __tandemSessionStorage[key] = items[key];
+        }
+        if (typeof storageObj.onChanged._fire === 'function' && Object.keys(changes).length > 0) {
+          storageObj.onChanged._fire(changes, 'session');
+        }
+        if (typeof cb === 'function') cb();
+        return Promise.resolve();
+      },
+      remove: function(keys, cb) {
+        var normalized = __tandemStorageNormalizeKeys(keys) || [];
+        var changes = {};
+        for (var i = 0; i < normalized.length; i++) {
+          var key = normalized[i];
+          if (!Object.prototype.hasOwnProperty.call(__tandemSessionStorage, key)) continue;
+          changes[key] = { oldValue: __tandemSessionStorage[key], newValue: undefined };
+          delete __tandemSessionStorage[key];
+        }
+        if (typeof storageObj.onChanged._fire === 'function' && Object.keys(changes).length > 0) {
+          storageObj.onChanged._fire(changes, 'session');
+        }
+        if (typeof cb === 'function') cb();
+        return Promise.resolve();
+      },
+      clear: function(cb) {
+        var changes = {};
+        for (var key in __tandemSessionStorage) {
+          if (!Object.prototype.hasOwnProperty.call(__tandemSessionStorage, key)) continue;
+          changes[key] = { oldValue: __tandemSessionStorage[key], newValue: undefined };
+        }
+        __tandemSessionStorage = {};
+        if (typeof storageObj.onChanged._fire === 'function' && Object.keys(changes).length > 0) {
+          storageObj.onChanged._fire(changes, 'session');
+        }
+        if (typeof cb === 'function') cb();
+        return Promise.resolve();
+      }
+    };
+  }
 
   /*
    * Native Messaging Proxy
@@ -449,12 +580,13 @@ function generatePolyfillScript(cwsId: string, apiPort: number): string {
       if (prop === 'runtime' && runtimeProxy) return runtimeProxy;
       if (prop === 'windows' && windowsObj)   return windowsObj;
       if (prop === 'tabs' && tabsObj)         return tabsObj;
+      if (prop === 'storage')                 return storageObj;
       if (prop === 'webNavigation')            return webNavStub;
       var val = target[prop];
       return (typeof val === 'function') ? val.bind(target) : val;
     },
     has: function(target, prop) {
-      return prop === 'action' || prop === 'notifications' || prop === 'runtime' || prop === 'windows' || prop === 'tabs' || (prop in target);
+      return prop === 'action' || prop === 'notifications' || prop === 'runtime' || prop === 'windows' || prop === 'tabs' || prop === 'storage' || (prop in target);
     }
   });
 
@@ -465,7 +597,7 @@ function generatePolyfillScript(cwsId: string, apiPort: number): string {
    */
   chrome = proxy;
   try { browser = proxy; } catch(e) {}
-  console.log('[Tandem] chrome.action polyfill v8 active for ${cwsId}');
+  console.log('[Tandem] chrome.action polyfill v9 active for ${cwsId}');
 })();
 /* Module-scope declarations — hoisted above the IIFE, shadow the globals */
 /* eslint-disable no-var */
@@ -545,7 +677,7 @@ export class ActionPolyfill {
         const polyfillCode = generatePolyfillScript(cwsId, this.apiPort);
         const POLYFILL_START_PREFIX = '/* Tandem chrome.action polyfill v';
         const POLYFILL_END_MARKER  = '/* Tandem:polyfill:end */';
-        const marker = '/* Tandem chrome.action polyfill v8';
+        const marker = '/* Tandem chrome.action polyfill v9';
 
         let existing = fs.readFileSync(swPath, 'utf-8');
 

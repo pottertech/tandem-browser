@@ -177,7 +177,7 @@ instead of depending on chat context.
 
 - Status: Complete
 - Date: 2026-03-07
-- Commit: Pending first Phase 1 implementation commit
+- Commit: 67d1464
 - Summary: Replaced blanket loopback trust with an explicit caller model in `class TandemAPI`, kept `/status` public, required bearer auth for normal HTTP routes, removed query-string token auth, exported a narrow trusted-extension route allowlist, and applied the same installed-extension validation to the native messaging WebSocket upgrade path.
 - Remaining risks for next phase: Gatekeeper fail-closed work must preserve the trusted-extension helper allowlist and the native messaging bridge while avoiding a new implicit bypass for shell/file callers.
 

@@ -49,6 +49,16 @@ function generatePolyfillScript(cwsId: string, apiPort: number): string {
   var __tandemNotificationStore = {};
   var __tandemSessionStorage = {};
 
+  function __tandemExtensionId() {
+    return (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.id) ? chrome.runtime.id : CWS_ID;
+  }
+
+  function __tandemExtensionHeaders(extraHeaders) {
+    var headers = extraHeaders ? Object.assign({}, extraHeaders) : {};
+    headers['X-Tandem-Extension-Id'] = __tandemExtensionId();
+    return headers;
+  }
+
   function makeEvent() {
     var listeners = [];
     return {
@@ -316,7 +326,7 @@ function generatePolyfillScript(cwsId: string, apiPort: number): string {
   function __nmSendNativeMessage(host, message, callback) {
     fetch(NM_HTTP, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: __tandemExtensionHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ host: host, message: message })
     })
     .then(function(r) { return r.json(); })
@@ -383,7 +393,9 @@ function generatePolyfillScript(cwsId: string, apiPort: number): string {
    * Bridge those calls through Tandem's local API using WebFrameMain frame data.
    */
   function __tandemFetchFrames(tabId) {
-    return fetch('http://127.0.0.1:' + API_PORT + '/extensions/web-navigation/frames?tabId=' + encodeURIComponent(String(tabId)))
+    return fetch('http://127.0.0.1:' + API_PORT + '/extensions/web-navigation/frames?tabId=' + encodeURIComponent(String(tabId)), {
+      headers: __tandemExtensionHeaders()
+    })
       .then(function(r) { return r.json(); })
       .then(function(d) { return d && Array.isArray(d.frames) ? d.frames : []; })
       .catch(function() { return []; });
@@ -391,7 +403,8 @@ function generatePolyfillScript(cwsId: string, apiPort: number): string {
   function __tandemFetchFrame(tabId, frameId) {
     return fetch(
       'http://127.0.0.1:' + API_PORT + '/extensions/web-navigation/frame?tabId=' +
-      encodeURIComponent(String(tabId)) + '&frameId=' + encodeURIComponent(String(frameId))
+      encodeURIComponent(String(tabId)) + '&frameId=' + encodeURIComponent(String(frameId)),
+      { headers: __tandemExtensionHeaders() }
     )
       .then(function(r) { return r.json(); })
       .then(function(d) { return d && d.frame ? d.frame : null; })
@@ -535,7 +548,9 @@ function generatePolyfillScript(cwsId: string, apiPort: number): string {
     }
     // Try original first; fall back to Tandem API if empty
     var fromApi = function() {
-      return fetch('http://127.0.0.1:' + API_PORT + '/extensions/active-tab')
+      return fetch('http://127.0.0.1:' + API_PORT + '/extensions/active-tab', {
+        headers: __tandemExtensionHeaders()
+      })
         .then(function(r) { return r.json(); })
         .then(function(d) { return d && d.tab ? [d.tab] : []; })
         .catch(function() { return []; });
@@ -846,9 +861,10 @@ export class ActionPolyfill {
         // fetch to the Tandem API that returns the active webview as a Chrome tab object.
         // TANDEM_PORT is declared at module scope by the polyfill (var TANDEM_PORT = N).
         const pDollarOrig = 'async function P$(){let A=new Promise(e=>{browser.tabs.query({active:!0,currentWindow:!0}).then(j=>{if(j===void 0||j.length===0){e(void 0);return}e(j[0])})});return wt()?Ja.withTimeout(A,500,k`tab-manager:activeNativeTab`):A}';
-        const pDollarPatch = 'async function P$(){try{var _r=await fetch("http://127.0.0.1:"+TANDEM_PORT+"/extensions/active-tab");var _d=await _r.json();if(_d&&_d.tab)return _d.tab;}catch(_e){console.error("[Tandem] P$ fetch failed:",_e);}return undefined;}';
-        if (existing.includes(pDollarOrig) && !existing.includes(pDollarPatch)) {
-          existing = existing.replace(pDollarOrig, pDollarPatch);
+        const pDollarLegacyPatch = 'async function P$(){try{var _r=await fetch("http://127.0.0.1:"+TANDEM_PORT+"/extensions/active-tab");var _d=await _r.json();if(_d&&_d.tab)return _d.tab;}catch(_e){console.error("[Tandem] P$ fetch failed:",_e);}return undefined;}';
+        const pDollarPatch = 'async function P$(){try{var _r=await fetch("http://127.0.0.1:"+TANDEM_PORT+"/extensions/active-tab",{headers:__tandemExtensionHeaders()});var _d=await _r.json();if(_d&&_d.tab)return _d.tab;}catch(_e){console.error("[Tandem] P$ fetch failed:",_e);}return undefined;}';
+        if (!existing.includes(pDollarPatch) && (existing.includes(pDollarOrig) || existing.includes(pDollarLegacyPatch))) {
+          existing = existing.replace(pDollarOrig, pDollarPatch).replace(pDollarLegacyPatch, pDollarPatch);
           log.info(`🩹 Patched P$() active tab query for ${manifest.name || cwsId}`);
         }
 
@@ -886,18 +902,20 @@ export class ActionPolyfill {
         // Replaces the anonymous catch{} with catch(_te){} that forwards the error.
         // Dre catch: '...Unable to generate item details')||logger.report(["Unable to generate item details'
         const dreCatchOrig = '}catch{return console.error("[Background]","Unable to generate item details")';
-        const dreCatchPatch = `}catch(_te){try{fetch("http://127.0.0.1:"+TANDEM_PORT+"/extensions/log",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({source:"Dre-catch",msg:_te?.message||String(_te),stack:(_te?.stack||"").slice(0,500)})});}catch{}return console.error("[Background]","Unable to generate item details")`;
-        if (existing.includes(dreCatchOrig) && !existing.includes(dreCatchPatch)) {
-          existing = existing.replaceAll(dreCatchOrig, dreCatchPatch);
+        const dreCatchLegacyPatch = `}catch(_te){try{fetch("http://127.0.0.1:"+TANDEM_PORT+"/extensions/log",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({source:"Dre-catch",msg:_te?.message||String(_te),stack:(_te?.stack||"").slice(0,500)})});}catch{}return console.error("[Background]","Unable to generate item details")`;
+        const dreCatchPatch = `}catch(_te){try{fetch("http://127.0.0.1:"+TANDEM_PORT+"/extensions/log",{method:"POST",headers:__tandemExtensionHeaders({"Content-Type":"application/json"}),body:JSON.stringify({source:"Dre-catch",msg:_te?.message||String(_te),stack:(_te?.stack||"").slice(0,500)})});}catch{}return console.error("[Background]","Unable to generate item details")`;
+        if (!existing.includes(dreCatchPatch) && (existing.includes(dreCatchOrig) || existing.includes(dreCatchLegacyPatch))) {
+          existing = existing.replaceAll(dreCatchOrig, dreCatchPatch).replaceAll(dreCatchLegacyPatch, dreCatchPatch);
           log.info(`🩹 Patched Dre catch (error telemetry) for ${manifest.name || cwsId}`);
         }
 
         // Bte: wrap registration P("get-settings-configuration",Bte) with a logging wrapper.
         // Replaces the handler registration so exceptions POST to /extensions/log before rethrowing.
         const bteRegOrig  = 'P("get-settings-configuration",Bte)';
-        const bteRegPatch = 'P("get-settings-configuration",async function(..._bteA){try{return await Bte(..._bteA)}catch(_bte){try{fetch("http://127.0.0.1:"+TANDEM_PORT+"/extensions/log",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({source:"Bte-catch",msg:_bte?.message||String(_bte),stack:(_bte?.stack||"").slice(0,500)})});}catch{}throw _bte;}})';
-        if (existing.includes(bteRegOrig) && !existing.includes(bteRegPatch)) {
-          existing = existing.replace(bteRegOrig, bteRegPatch);
+        const bteRegLegacyPatch = 'P("get-settings-configuration",async function(..._bteA){try{return await Bte(..._bteA)}catch(_bte){try{fetch("http://127.0.0.1:"+TANDEM_PORT+"/extensions/log",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({source:"Bte-catch",msg:_bte?.message||String(_bte),stack:(_bte?.stack||"").slice(0,500)})});}catch{}throw _bte;}})';
+        const bteRegPatch = 'P("get-settings-configuration",async function(..._bteA){try{return await Bte(..._bteA)}catch(_bte){try{fetch("http://127.0.0.1:"+TANDEM_PORT+"/extensions/log",{method:"POST",headers:__tandemExtensionHeaders({"Content-Type":"application/json"}),body:JSON.stringify({source:"Bte-catch",msg:_bte?.message||String(_bte),stack:(_bte?.stack||"").slice(0,500)})});}catch{}throw _bte;}})';
+        if (!existing.includes(bteRegPatch) && (existing.includes(bteRegOrig) || existing.includes(bteRegLegacyPatch))) {
+          existing = existing.replace(bteRegOrig, bteRegPatch).replace(bteRegLegacyPatch, bteRegPatch);
           log.info(`🩹 Patched Bte registration (error telemetry) for ${manifest.name || cwsId}`);
         }
 

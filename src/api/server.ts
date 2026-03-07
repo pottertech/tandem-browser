@@ -110,7 +110,7 @@ export class TandemAPI {
         // Block everything else
         callback(new Error('CORS not allowed'));
       },
-      allowedHeaders: ['Authorization', 'Content-Type', 'X-Session'],
+      allowedHeaders: ['Authorization', 'Content-Type', 'X-Session', 'X-Tandem-Extension-Id'],
     }));
     this.app.use(express.json({ limit: '50mb' }));
 
@@ -195,8 +195,11 @@ export class TandemAPI {
 
   private classifyCaller(req: Request): ApiCallerInfo {
     const origin = this.normalizeOrigin(req.headers.origin);
+    const referer = this.normalizeOrigin(req.headers.referer);
     const remoteAddress = req.socket.remoteAddress ?? null;
-    const extensionId = this.parseExtensionOriginId(origin);
+    const extensionId = this.parseExtensionOriginId(origin)
+      ?? this.parseExtensionOriginId(referer)
+      ?? this.extractClaimedExtensionId(req);
     const authMode = this.getAuthModeForPath(req.path);
     const bearerToken = this.extractBearerToken(req.headers.authorization);
 
@@ -208,8 +211,13 @@ export class TandemAPI {
       return { kind: 'local-automation', authMode: 'token', origin, remoteAddress, extensionId: null };
     }
 
-    if (authMode === 'trusted-extension' && this.isTrustedExtensionOrigin(origin, this.getRequiredExtensionId(req))) {
-      return { kind: 'trusted-extension', authMode, origin, remoteAddress, extensionId };
+    if (
+      authMode === 'trusted-extension'
+      && extensionId
+      && this.isInstalledExtensionId(extensionId)
+      && this.isRequiredExtensionIdSatisfied(req, extensionId)
+    ) {
+      return { kind: 'trusted-extension', authMode, origin: origin ?? referer, remoteAddress, extensionId };
     }
 
     if (origin?.startsWith('file://') || origin === 'null') {
@@ -243,17 +251,27 @@ export class TandemAPI {
 
   private parseExtensionOriginId(origin: string | null): string | null {
     if (!origin) return null;
-    const match = origin.match(/^chrome-extension:\/\/([a-p]{32})\/?$/);
+    const match = origin.match(/^chrome-extension:\/\/([a-p]{32})(?:\/.*)?$/);
     return match?.[1] ?? null;
   }
 
-  private getRequiredExtensionId(req: Request): string | null {
-    if (req.path !== '/extensions/identity/auth') {
-      return null;
+  private extractClaimedExtensionId(req: Request): string | null {
+    const headerValue = req.headers['x-tandem-extension-id'];
+    if (Array.isArray(headerValue)) {
+      return headerValue[0]?.trim() || null;
     }
+    if (typeof headerValue === 'string' && headerValue.trim()) {
+      return headerValue.trim();
+    }
+    return null;
+  }
 
+  private isRequiredExtensionIdSatisfied(req: Request, extensionId: string): boolean {
+    if (req.path !== '/extensions/identity/auth') {
+      return true;
+    }
     const body = req.body as { extensionId?: unknown } | undefined;
-    return typeof body?.extensionId === 'string' ? body.extensionId : null;
+    return typeof body?.extensionId === 'string' ? body.extensionId === extensionId : false;
   }
 
   private isInstalledExtensionId(extensionId: string): boolean {

@@ -2,6 +2,10 @@
 
 All notable changes to Tandem Browser will be documented in this file.
 
+## [v0.44.75] - 2026-03-07
+
+- fix: restore workspace tab switching
+
 ## [v0.44.74] - 2026-03-07
 
 - fix: restore 1password extension helper auth

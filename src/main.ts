@@ -11,7 +11,7 @@ process.on('unhandledRejection', (reason) => {
   console.error('[Main] Unhandled rejection:', reason);
 });
 
-import type { WebContents } from 'electron';
+import { webContents, type WebContents } from 'electron';
 import fs from 'fs';
 import { app, BrowserWindow, session, ipcMain } from 'electron';
 import path from 'path';
@@ -138,6 +138,36 @@ function registerEarlyShellAuthIpc(): void {
 }
 /** Queue security coverage for webviews that load before SecurityManager is ready */
 const pendingSecurityCoverageWebContentsIds: number[] = [];
+
+function readApiTokenFromDisk(): string {
+  try {
+    return fs.readFileSync(tandemDir('api-token'), 'utf-8').trim();
+  } catch {
+    return '';
+  }
+}
+
+function isLocalTandemApiUrl(rawUrl: string): boolean {
+  try {
+    const url = new URL(rawUrl);
+    return (url.hostname === 'localhost' || url.hostname === '127.0.0.1') && url.port === String(API_PORT);
+  } catch {
+    return false;
+  }
+}
+
+function isInternalShellWebContents(webContentsId?: number): boolean {
+  if (typeof webContentsId !== 'number' || webContentsId <= 0) {
+    return false;
+  }
+
+  const sender = webContents.fromId(webContentsId);
+  if (!sender || sender.isDestroyed()) {
+    return false;
+  }
+
+  return sender.getURL().startsWith('file://');
+}
 
 function canUseWindow(win: BrowserWindow | null): win is BrowserWindow {
   return !!win && !win.isDestroyed() && !win.webContents.isDestroyed();
@@ -313,6 +343,26 @@ async function createWindow(): Promise<BrowserWindow> {
         headers['Origin'] = `http://127.0.0.1:${WEBHOOK_PORT}`;
       }
       return headers;
+    }
+  });
+
+  dispatcher.registerBeforeSendHeaders({
+    name: 'ShellApiAuth',
+    priority: 55,
+    handler: (details, headers) => {
+      if (!isLocalTandemApiUrl(details.url) || !isInternalShellWebContents(details.webContentsId)) {
+        return headers;
+      }
+
+      const token = readApiTokenFromDisk();
+      if (!token) {
+        return headers;
+      }
+
+      return {
+        ...headers,
+        Authorization: `Bearer ${token}`,
+      };
     }
   });
 

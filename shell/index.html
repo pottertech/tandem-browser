@@ -14,7 +14,7 @@
   <div class="tab-bar" id="tab-bar">
     <button class="menu-btn" id="btn-app-menu" title="Menu">☰</button>
     <!-- Tabs will be inserted here dynamically -->
-    <button class="tab-new-btn" id="btn-new-tab" title="Nieuwe tab (Cmd+T)">+</button>
+    <button class="tab-new-btn" id="btn-new-tab" title="New tab (Cmd+T)">+</button>
     <div class="tab-bar-spacer"></div>
 
     <!-- Window controls (Linux/Windows only) -->
@@ -81,31 +81,31 @@
     <!-- ═══ SIDEBAR ═══ (SHELL layer, NOT in webview) -->
     <div class="sidebar" id="sidebar" data-state="narrow">
 
-      <!-- Icon strip (altijd zichtbaar in narrow/wide) -->
+      <!-- Icon strip (always visible in narrow/wide) -->
       <div class="sidebar-strip" id="sidebar-strip">
-        <!-- Items worden dynamisch gegenereerd door JS -->
+        <!-- Items are generated dynamically by JS -->
         <div class="sidebar-items" id="sidebar-items"></div>
 
-        <!-- Bodem: narrow/wide toggle + customize -->
+        <!-- Footer: narrow/wide toggle + customize -->
         <div class="sidebar-footer">
-          <button class="sidebar-footer-btn" id="sidebar-toggle-width" title="Uitklappen">›</button>
-          <button class="sidebar-footer-btn" id="sidebar-customize" title="Aanpassen">⚙</button>
+          <button class="sidebar-footer-btn" id="sidebar-toggle-width" title="Expand">›</button>
+          <button class="sidebar-footer-btn" id="sidebar-customize" title="Customize">⚙</button>
           <button class="sidebar-footer-btn" id="sidebar-tips" title="Tips &amp; Tutorials">💡</button>
         </div>
       </div>
 
-      <!-- Panel container (uitschuifbaar naast icon strip) -->
+      <!-- Panel container (expandable next to the icon strip) -->
       <div class="sidebar-panel" id="sidebar-panel">
         <div class="sidebar-panel-header">
           <span class="sidebar-panel-title" id="sidebar-panel-title"></span>
           <div style="display:flex;align-items:center;gap:2px;">
             <button class="sidebar-panel-reload" id="sidebar-panel-reload" title="Reload">↺</button>
             <button class="sidebar-panel-pin" id="sidebar-panel-pin" title="Pin panel">📌</button>
-            <button class="sidebar-panel-close" id="sidebar-panel-close" title="Sluiten">✕</button>
+            <button class="sidebar-panel-close" id="sidebar-panel-close" title="Close">✕</button>
           </div>
         </div>
         <div class="sidebar-panel-content" id="sidebar-panel-content">
-          <!-- Inhoud gerenderd door actief item (Fase 3+) -->
+          <!-- Content rendered by the active item (Phase 3+) -->
         </div>
         <div class="sidebar-panel-resize" id="sidebar-panel-resize"></div>
       </div>
@@ -116,28 +116,28 @@
     <div class="browser-content" id="webview-container">
       <!-- Find in page bar -->
       <div class="find-bar" id="find-bar">
-        <input type="text" id="find-input" placeholder="Zoek op pagina...">
+        <input type="text" id="find-input" placeholder="Find on page...">
         <span class="find-count" id="find-count"></span>
-        <button id="find-prev" title="Vorige">▲</button>
-        <button id="find-next" title="Volgende">▼</button>
-        <button id="find-close" title="Sluiten (Esc)">✕</button>
+        <button id="find-prev" title="Previous">▲</button>
+        <button id="find-next" title="Next">▼</button>
+        <button id="find-close" title="Close (Esc)">✕</button>
       </div>
       <!-- Draw overlay canvas (SHELL layer, NOT in webview — anti-detect!) -->
       <canvas class="draw-overlay" id="draw-canvas"></canvas>
       <!-- Draw toolbar -->
       <div class="draw-toolbar" id="draw-toolbar">
-        <button data-tool="arrow" title="Pijl">↗</button>
-        <button data-tool="rect" title="Rechthoek">▢</button>
-        <button data-tool="circle" title="Cirkel">◯</button>
-        <button data-tool="line" title="Vrije lijn" class="active">✎</button>
-        <button data-tool="text" title="Tekst">T</button>
+        <button data-tool="arrow" title="Arrow">↗</button>
+        <button data-tool="rect" title="Rectangle">▢</button>
+        <button data-tool="circle" title="Circle">◯</button>
+        <button data-tool="line" title="Freehand" class="active">✎</button>
+        <button data-tool="text" title="Text">T</button>
         <div class="separator"></div>
-        <button class="color-btn active" data-color="#e94560" style="background:#e94560" title="Rood"></button>
-        <button class="color-btn" data-color="#f0a500" style="background:#f0a500" title="Geel"></button>
-        <button class="color-btn" data-color="#4ecca3" style="background:#4ecca3" title="Groen"></button>
-        <button class="color-btn" data-color="#4285f4" style="background:#4285f4" title="Blauw"></button>
+        <button class="color-btn active" data-color="#e94560" style="background:#e94560" title="Red"></button>
+        <button class="color-btn" data-color="#f0a500" style="background:#f0a500" title="Yellow"></button>
+        <button class="color-btn" data-color="#4ecca3" style="background:#4ecca3" title="Green"></button>
+        <button class="color-btn" data-color="#4285f4" style="background:#4285f4" title="Blue"></button>
         <div class="separator"></div>
-        <button id="btn-draw-clear" title="Wissen">🗑</button>
+        <button id="btn-draw-clear" title="Clear">🗑</button>
         <button id="btn-snap-wingman" title="📸 Snap for Wingman">📸</button>
       </div>
     </div>
@@ -146,7 +146,7 @@
     <div class="voice-indicator-overlay" id="voice-indicator">
       <div class="voice-pulse"></div>
       <div class="voice-text">
-        <div class="voice-status">🎙️ Luisteren...</div>
+        <div class="voice-status">🎙️ Listening...</div>
         <div class="voice-live-text" id="voice-live-text"></div>
       </div>
     </div>
@@ -155,7 +155,7 @@
     <div class="onboarding-overlay" id="onboarding-overlay">
       <div class="onboarding-content">
         <div class="onboarding-step" id="onboarding-step-1">
-          <h2>👋 Welkom bij Tandem Browser</h2>
+          <h2>👋 Welcome to Tandem Browser</h2>
           <p>You + Wingman = browse together. You drive, Wingman watches and helps.</p>
           <div class="onboarding-feature">
             <span class="onboarding-icon">⌘K</span>
@@ -164,7 +164,7 @@
         </div>
 
         <div class="onboarding-step" id="onboarding-step-2" style="display:none;">
-          <h2>📸 Screenshots & Annotaties</h2>
+          <h2>📸 Screenshots & Annotations</h2>
           <p>Draw on the page and take screenshots for Wingman.</p>
           <div class="onboarding-feature">
             <span class="onboarding-icon">⌘⇧D</span>
@@ -186,20 +186,20 @@
         </div>
 
         <div class="onboarding-step" id="onboarding-step-4" style="display:none;">
-          <h2>🚀 Klaar om te beginnen!</h2>
-          <p>Alle shortcuts staan in het menu (⌘?) als je ze nodig hebt.</p>
+          <h2>🚀 Ready to get started!</h2>
+          <p>All shortcuts are in the menu (⌘?) if you need them.</p>
         </div>
 
         <div class="onboarding-nav">
-          <button id="onboarding-prev" disabled>Vorige</button>
+          <button id="onboarding-prev" disabled>Previous</button>
           <div class="onboarding-dots">
             <span class="dot active"></span>
             <span class="dot"></span>
             <span class="dot"></span>
             <span class="dot"></span>
           </div>
-          <button id="onboarding-next">Volgende</button>
-          <button id="onboarding-skip">Overslaan</button>
+          <button id="onboarding-next">Next</button>
+          <button id="onboarding-skip">Skip</button>
         </div>
       </div>
     </div>
@@ -252,9 +252,9 @@
         <button class="panel-tab" data-panel-tab="claronote" title="Voice Notes">🎙️</button>
         <button class="vault-toggle-btn" id="vault-toggle-btn" title="Password Vault"
           style="background:none;border:none;color:var(--text-dim);font-size:16px;cursor:pointer;margin-left:auto;transition:color 0.15s;">🔒</button>
-        <button class="live-toggle-btn" id="live-toggle-btn" title="Live Mode — Wingman kijkt mee"
+        <button class="live-toggle-btn" id="live-toggle-btn" title="Live Mode — Wingman is watching"
           style="background:none;border:1px solid rgba(255,255,255,0.15);color:var(--text-dim);font-size:12px;cursor:pointer;padding:4px 8px;border-radius:4px;transition:all 0.15s;">👁️</button>
-        <button class="noodrem-btn" id="noodrem-btn" title="Noodrem — stop alle AI activiteit (Escape)">🛑</button>
+        <button class="noodrem-btn" id="noodrem-btn" title="Emergency stop — stop all AI activity (Escape)">🛑</button>
       </div>
       <div class="panel-body" id="panel-body">
         <!-- Activity tab -->
@@ -274,7 +274,7 @@
             </button>
             <button class="backend-option" data-backend="both" id="btn-backend-both">
               <span class="backend-dot" id="dot-both"></span>
-              🐙🤖 Beide
+              🐙🤖 Both
             </button>
           </div>
           <div class="ws-status" id="ws-status"
@@ -298,8 +298,8 @@
         <!-- Screenshots tab -->
         <div class="panel-content" id="panel-screenshots" style="display:none;flex-direction:column;flex:1;">
           <div class="screenshot-preview" id="screenshot-list">
-            <p style="font-size:12px;color:var(--text-dim);text-align:center;padding:20px;">Nog geen screenshots.
-              Gebruik Cmd+D → 📸</p>
+            <p style="font-size:12px;color:var(--text-dim);text-align:center;padding:20px;">No screenshots yet.
+              Use Cmd+D → 📸</p>
           </div>
         </div>
 
@@ -309,16 +309,16 @@
           <div class="claronote-login" id="claronote-login" style="display:none;">
             <div style="padding:20px;text-align:center;">
               <h3 style="margin-bottom:15px;color:var(--text);">🎙️ ClaroNote</h3>
-              <p style="font-size:12px;color:var(--text-dim);margin-bottom:20px;">Log in met je ClaroNote account</p>
+              <p style="font-size:12px;color:var(--text-dim);margin-bottom:20px;">Log in with your ClaroNote account</p>
 
               <form id="claronote-login-form" style="display:flex;flex-direction:column;gap:12px;">
                 <input type="email" id="claronote-email" placeholder="Email" required
                   style="background:var(--input-bg);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px;color:var(--text);font-size:12px;" />
-                <input type="password" id="claronote-password" placeholder="Wachtwoord" required
+                <input type="password" id="claronote-password" placeholder="Password" required
                   style="background:var(--input-bg);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px;color:var(--text);font-size:12px;" />
                 <button type="submit" id="claronote-login-btn"
                   style="background:var(--accent);border:none;color:#fff;border-radius:8px;padding:10px;cursor:pointer;font-size:12px;transition:opacity 0.15s;">
-                  Inloggen
+                  Log in
                 </button>
               </form>
 
@@ -337,7 +337,7 @@
                   🎙️
                 </button>
                 <div class="recording-status" id="claronote-status">
-                  <div style="font-size:12px;color:var(--text);" id="claronote-status-text">Klaar om op te nemen</div>
+                  <div style="font-size:12px;color:var(--text);" id="claronote-status-text">Ready to record</div>
                   <div style="font-size:10px;color:var(--text-dim);" id="claronote-timer"></div>
                 </div>
               </div>
@@ -363,7 +363,7 @@
                 </button>
               </div>
               <div id="claronote-notes-list">
-                <p style="font-size:12px;color:var(--text-dim);text-align:center;padding:20px;">Laden...</p>
+                <p style="font-size:12px;color:var(--text-dim);text-align:center;padding:20px;">Loading...</p>
               </div>
             </div>
           </div>
@@ -377,7 +377,7 @@
   <!-- Wingman alert overlay -->
   <div class="wingman-overlay" id="wingman-overlay">
     <button class="dismiss" onclick="dismissAlert()">✕</button>
-    <h3 id="alert-title">🤖 Wingman heeft je nodig</h3>
+    <h3 id="alert-title">🤖 Wingman needs you</h3>
     <p id="alert-body">...</p>
   </div>
 
@@ -398,9 +398,9 @@
   // SIDEBAR
   // ═══════════════════════════════════════
   const ocSidebar = (() => {
-    // Icon definities — twee stijlen zoals Opera:
-    // - Utility items: Heroicons outline (grijs, wordt wit bij hover/active)
-    // - Messenger items: gekleurde brand icons op gekleurde ronde achtergrond
+    // Icon definitions — two styles similar to Opera:
+    // - Utility items: Heroicons outline (gray, turns white on hover/active)
+    // - Messenger items: colored brand icons on a colored rounded background
     const ICONS = {
       // === UTILITY ITEMS (Heroicons outline) ===
       workspaces: { svg: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z" /></svg>`, brand: null },
@@ -410,7 +410,7 @@
       history:    { svg: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>`, brand: null },
       downloads:  { svg: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>`, brand: null },
 
-      // === COMMUNICATIE ITEMS (gekleurde brand icons, eigen achtergrond) ===
+      // === COMMUNICATION ITEMS (colored brand icons, custom background) ===
       calendar:  { svg: `<svg viewBox="0 0 24 24" fill="white"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg>`, brand: '#4285F4' },
       gmail:     { svg: `<svg viewBox="0 0 24 24" fill="white"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>`, brand: '#EA4335' },
       whatsapp:  { svg: `<svg viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>`, brand: '#25D366' },
@@ -535,7 +535,7 @@
       const sec2 = sorted.filter(i => i.order >= 10 && i.order < 20);
       const sec3 = sorted.filter(i => i.order >= 20);
 
-      // 3 secties: Workspace icons / Communicatie / Utilities, met separators ertussen
+      // 3 sections: workspace icons / communication / utilities, with separators in between
       const wsHtml = renderWorkspaceIcons();
       itemsEl.innerHTML =
         wsHtml +
@@ -565,7 +565,7 @@
       // Wide toggle button
       const toggleBtn = document.getElementById('sidebar-toggle-width');
       toggleBtn.textContent = config.state === 'wide' ? '\u2039' : '\u203a';
-      toggleBtn.title = config.state === 'wide' ? 'Inklappen' : 'Uitklappen';
+      toggleBtn.title = config.state === 'wide' ? 'Collapse' : 'Expand';
     }
 
     // === WEBVIEW MODULE ===
@@ -2492,13 +2492,13 @@
       </div>
 
       <div class="shortcuts-search">
-        <input type="text" id="shortcuts-search" placeholder="Zoek shortcuts..." autocomplete="off">
+        <input type="text" id="shortcuts-search" placeholder="Search shortcuts..." autocomplete="off">
       </div>
 
       <div class="shortcuts-grid">
         <div class="shortcut-group">
           <h3>Navigation</h3>
-          <div class="shortcut-item" data-search="nieuwe tab new tab open">
+          <div class="shortcut-item" data-search="new tab open">
             <span class="shortcut-desc">New tab</span>
             <kbd class="shortcut">Cmd+T</kbd>
           </div>
@@ -2506,7 +2506,7 @@
             <span class="shortcut-desc">Close tab</span>
             <kbd class="shortcut">Cmd+W</kbd>
           </div>
-          <div class="shortcut-item" data-search="tab switch wissel 1 2 3 4 5 6 7 8 9">
+          <div class="shortcut-item" data-search="tab switch 1 2 3 4 5 6 7 8 9">
             <span class="shortcut-desc">Go to tab 1-9</span>
             <kbd class="shortcut">Cmd+1-9</kbd>
           </div>
@@ -2538,11 +2538,11 @@
 
         <div class="shortcut-group">
           <h3>Tools</h3>
-          <div class="shortcut-item" data-search="bookmark bladwijzer save opslaan">
+          <div class="shortcut-item" data-search="bookmark save">
             <span class="shortcut-desc">Bookmark page</span>
             <kbd class="shortcut">Cmd+D</kbd>
           </div>
-          <div class="shortcut-item" data-search="draw teken annotatie pen">
+          <div class="shortcut-item" data-search="draw annotation pen">
             <span class="shortcut-desc">Drawing mode</span>
             <kbd class="shortcut">Cmd+Shift+D</kbd>
           </div>
@@ -2550,7 +2550,7 @@
             <span class="shortcut-desc">Screenshot</span>
             <kbd class="shortcut">Cmd+Shift+S</kbd>
           </div>
-          <div class="shortcut-item" data-search="audio record opname geluid">
+          <div class="shortcut-item" data-search="audio record sound">
             <span class="shortcut-desc">Record audio</span>
             <kbd class="shortcut">Cmd+R</kbd>
           </div>
@@ -2562,19 +2562,19 @@
             <span class="shortcut-desc">Settings</span>
             <kbd class="shortcut">Cmd+,</kbd>
           </div>
-          <div class="shortcut-item" data-search="help shortcuts hulp">
+          <div class="shortcut-item" data-search="help shortcuts">
             <span class="shortcut-desc">Help & shortcuts</span>
             <kbd class="shortcut">Cmd+?</kbd>
           </div>
-          <div class="shortcut-item" data-search="zoom in inzoomen groter">
+          <div class="shortcut-item" data-search="zoom in larger">
             <span class="shortcut-desc">Zoom in</span>
             <kbd class="shortcut">Cmd+=</kbd>
           </div>
-          <div class="shortcut-item" data-search="zoom out uitzoomen kleiner">
+          <div class="shortcut-item" data-search="zoom out smaller">
             <span class="shortcut-desc">Zoom out</span>
             <kbd class="shortcut">Cmd+-</kbd>
           </div>
-          <div class="shortcut-item" data-search="zoom reset normale grootte">
+          <div class="shortcut-item" data-search="zoom reset normal size">
             <span class="shortcut-desc">Reset zoom</span>
             <kbd class="shortcut">Cmd+0</kbd>
           </div>

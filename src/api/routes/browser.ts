@@ -354,7 +354,7 @@ export function registerBrowserRoutes(router: Router, ctx: RouteContext): void {
   // ═══════════════════════════════════════════════
 
   router.post('/wingman-alert', (req: Request, res: Response) => {
-    const { title = 'Hulp nodig', body = '' } = req.body;
+    const { title = 'Need help', body = '' } = req.body;
     wingmanAlert(title, body);
     res.json({ ok: true, sent: true });
   });

@@ -123,7 +123,7 @@
           <span class="group-dot" style="display:none"></span>
           <img class="tab-favicon" src="" style="display:none">
           <span class="tab-title">New Tab</span>
-          <button class="tab-close" title="Sluit tab">✕</button>
+          <button class="tab-close" title="Close tab">✕</button>
         `;
 
         // Click to focus
@@ -352,7 +352,7 @@
         <span class="group-dot" style="display:none"></span>
         <img class="tab-favicon" src="" style="display:none">
         <span class="tab-title">New Tab</span>
-        <button class="tab-close" title="Sluit tab">✕</button>
+        <button class="tab-close" title="Close tab">✕</button>
       `;
       tabBar.insertBefore(tabEl, btnNewTab);
 
@@ -1424,13 +1424,13 @@
     })();
 
     // ═══════════════════════════════════════════════
-    // Noodrem + Approval System (Fase 4)
+    // Emergency stop + Approval System (Phase 4)
     // ═══════════════════════════════════════════════
     (() => {
       const noodremBtn = document.getElementById('noodrem-btn');
       const approvalContainer = document.getElementById('approval-container');
 
-      // Noodrem — debounced emergency stop (prevents spam)
+      // Emergency stop — debounced emergency stop (prevents spam)
       let _noodremLast = 0;
       function fireNoodrem() {
         const now = Date.now();
@@ -1462,7 +1462,7 @@
             liveEnabled = data.enabled;
             liveToggleBtn.style.color = liveEnabled ? '#e94560' : 'var(--text-dim)';
             liveToggleBtn.style.borderColor = liveEnabled ? '#e94560' : 'rgba(255,255,255,0.15)';
-            liveToggleBtn.title = liveEnabled ? 'Live Mode AAN — Wingman kijkt mee' : 'Live Mode UIT';
+            liveToggleBtn.title = liveEnabled ? 'Live Mode ON — Wingman is watching' : 'Live Mode OFF';
           } catch (e) {
             console.error('Live toggle failed:', e);
           }
@@ -1477,7 +1477,7 @@
         }
       }
 
-      // Escape key = noodrem (global handler, always works)
+      // Escape key = emergency stop (global handler, always works)
       document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && e.shiftKey) {
           e.preventDefault();
@@ -2494,7 +2494,7 @@
       if (items.length === 0) {
         const empty = document.createElement('div');
         empty.style.cssText = 'padding: 6px 12px; font-size: 11px; color: #555;';
-        empty.textContent = '(leeg)';
+        empty.textContent = '(empty)';
         dropdown.appendChild(empty);
       }
 
@@ -2792,7 +2792,7 @@
         if (data.base64) {
           const imgSrc = `data:image/png;base64,${data.base64}`;
           div.innerHTML = `
-            <img src="${imgSrc}" alt="${escapeHtml(data.filename)}" title="Klik om te vergroten">
+            <img src="${imgSrc}" alt="${escapeHtml(data.filename)}" title="Click to enlarge">
             <div class="ss-label">${escapeHtml(data.filename)}</div>
           `;
           div.querySelector('img').addEventListener('click', () => {
@@ -2837,7 +2837,7 @@
         setupClaroNoteEventListeners();
       } catch (error) {
         console.error('Failed to initialize ClaroNote:', error);
-        showClaroNoteError('Verbindingsfout met ClaroNote API');
+        showClaroNoteError('Connection error with ClaroNote API');
       }
     }
 
@@ -2875,7 +2875,7 @@
       const email = emailEl.value;
       const password = passwordEl.value;
       if (!email || !password) return;
-      loginBtn.textContent = 'Inloggen...';
+      loginBtn.textContent = 'Logging in...';
       loginBtn.disabled = true;
       try {
         const response = await fetch('http://localhost:8765/claronote/login', {
@@ -2888,12 +2888,12 @@
           showClaroNoteMain(data.user);
           await loadClaroNoteNotes();
         } else {
-          showClaroNoteError(data.error || 'Inloggen mislukt');
+          showClaroNoteError(data.error || 'Login failed');
         }
       } catch (error) {
-        showClaroNoteError('Netwerk fout');
+        showClaroNoteError('Network error');
       } finally {
-        loginBtn.textContent = 'Inloggen';
+        loginBtn.textContent = 'Log in';
         loginBtn.disabled = false;
       }
     }
@@ -2937,7 +2937,7 @@
         // Notify server (state tracking only)
         fetch('http://localhost:8765/claronote/record/start', { method: 'POST' }).catch(() => { });
       } catch (error) {
-        showClaroNoteError('Microfoon niet beschikbaar');
+        showClaroNoteError('Microphone not available');
       }
     }
 
@@ -2959,7 +2959,7 @@
 
           updateRecordingUI();
           stopRecordingTimer();
-          document.getElementById('claronote-status-text').textContent = 'Uploaden...';
+          document.getElementById('claronote-status-text').textContent = 'Uploading...';
 
           // Convert to base64 and upload via API proxy
           try {
@@ -2975,21 +2975,21 @@
                 });
                 const data = await resp.json();
                 if (data.ok && data.noteId) {
-                  document.getElementById('claronote-status-text').textContent = 'Verwerken...';
+                  document.getElementById('claronote-status-text').textContent = 'Processing...';
                   pollNoteStatus(data.noteId);
                 } else {
-                  document.getElementById('claronote-status-text').textContent = 'Upload mislukt';
-                  setTimeout(() => { document.getElementById('claronote-status-text').textContent = 'Klaar om op te nemen'; }, 3000);
+                  document.getElementById('claronote-status-text').textContent = 'Upload failed';
+                  setTimeout(() => { document.getElementById('claronote-status-text').textContent = 'Ready to record'; }, 3000);
                 }
               } catch (err) {
-                document.getElementById('claronote-status-text').textContent = 'Upload mislukt';
-                setTimeout(() => { document.getElementById('claronote-status-text').textContent = 'Klaar om op te nemen'; }, 3000);
+                document.getElementById('claronote-status-text').textContent = 'Upload failed';
+                setTimeout(() => { document.getElementById('claronote-status-text').textContent = 'Ready to record'; }, 3000);
               }
               resolve();
             };
             reader.readAsDataURL(blob);
           } catch (err) {
-            document.getElementById('claronote-status-text').textContent = 'Upload mislukt';
+            document.getElementById('claronote-status-text').textContent = 'Upload failed';
             resolve();
           }
         };
@@ -3023,12 +3023,12 @@
       if (claroNoteRecording) {
         recordBtn.style.background = 'var(--warning)';
         recordBtn.textContent = '⏹️';
-        statusText.textContent = 'Opname bezig...';
+        statusText.textContent = 'Recording...';
         waveform.style.display = 'block';
       } else {
         recordBtn.style.background = 'var(--accent)';
         recordBtn.textContent = '🎙️';
-        statusText.textContent = 'Klaar om op te nemen';
+        statusText.textContent = 'Ready to record';
         waveform.style.display = 'none';
       }
     }
@@ -3068,7 +3068,7 @@
       const listEl = document.getElementById('claronote-notes-list');
 
       if (notes.length === 0) {
-        listEl.innerHTML = '<p style="font-size:12px;color:var(--text-dim);text-align:center;padding:20px;">Nog geen notities opgenomen</p>';
+        listEl.innerHTML = '<p style="font-size:12px;color:var(--text-dim);text-align:center;padding:20px;">No notes recorded yet</p>';
         return;
       }
 
@@ -3081,16 +3081,16 @@
         // Status indicator
         let statusColor = 'var(--text-dim)';
         let statusText = note.status;
-        if (note.status === 'READY') { statusColor = 'var(--success)'; statusText = 'Klaar'; }
-        else if (note.status === 'PROCESSING') { statusColor = 'var(--warning)'; statusText = 'Verwerken...'; }
-        else if (note.status === 'UPLOADING') { statusColor = 'var(--accent)'; statusText = 'Uploaden...'; }
-        else if (note.status === 'ERROR') { statusColor = 'var(--warning)'; statusText = 'Fout'; }
+        if (note.status === 'READY') { statusColor = 'var(--success)'; statusText = 'Ready'; }
+        else if (note.status === 'PROCESSING') { statusColor = 'var(--warning)'; statusText = 'Processing...'; }
+        else if (note.status === 'UPLOADING') { statusColor = 'var(--accent)'; statusText = 'Uploading...'; }
+        else if (note.status === 'ERROR') { statusColor = 'var(--warning)'; statusText = 'Error'; }
 
         noteEl.innerHTML = `
           <div style="display:flex;justify-content:between;align-items:flex-start;gap:8px;">
             <div style="flex:1;">
               <div style="font-size:12px;color:var(--text);margin-bottom:4px;font-weight:500;">
-                ${note.title || 'Notitie'}
+                ${note.title || 'Note'}
               </div>
               ${note.summary ? `
                 <div style="font-size:11px;color:var(--text-dim);margin-bottom:6px;line-height:1.3;">
@@ -3100,7 +3100,7 @@
               <div style="font-size:10px;color:var(--text-dim);display:flex;gap:8px;">
                 <span>${Math.floor(note.duration / 60)}:${(note.duration % 60).toString().padStart(2, '0')}</span>
                 <span>•</span>
-                <span>${new Date(note.createdAt).toLocaleDateString('nl-NL')}</span>
+                <span>${new Date(note.createdAt).toLocaleDateString('en-GB')}</span>
               </div>
             </div>
             <div style="flex-shrink:0;font-size:10px;color:${statusColor};">
@@ -3155,19 +3155,19 @@
 
       content.innerHTML = `
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
-          <h3 style="margin:0;color:var(--text);">${note.title || 'Notitie'}</h3>
+          <h3 style="margin:0;color:var(--text);">${note.title || 'Note'}</h3>
           <button onclick="this.parentElement.parentElement.parentElement.remove()" 
                   style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:18px;">✕</button>
         </div>
         
         <div style="margin-bottom:15px;font-size:11px;color:var(--text-dim);display:flex;gap:12px;">
-          <span>Duur: ${Math.floor(note.duration / 60)}:${(note.duration % 60).toString().padStart(2, '0')}</span>
-          <span>Datum: ${new Date(note.createdAt).toLocaleString('nl-NL')}</span>
+          <span>Duration: ${Math.floor(note.duration / 60)}:${(note.duration % 60).toString().padStart(2, '0')}</span>
+          <span>Date: ${new Date(note.createdAt).toLocaleString('en-GB')}</span>
         </div>
         
         ${note.summary ? `
           <div style="margin-bottom:15px;">
-            <h4 style="margin:0 0 8px 0;font-size:12px;color:var(--accent);">Samenvatting</h4>
+            <h4 style="margin:0 0 8px 0;font-size:12px;color:var(--accent);">Summary</h4>
             <div style="font-size:12px;line-height:1.4;">${note.summary}</div>
           </div>
         ` : ''}
@@ -3177,7 +3177,7 @@
             <h4 style="margin:0 0 8px 0;font-size:12px;color:var(--accent);">Transcript</h4>
             <div style="font-size:12px;line-height:1.5;white-space:pre-wrap;">${note.transcript}</div>
           </div>
-        ` : '<div style="font-size:12px;color:var(--text-dim);">Transcript nog niet beschikbaar</div>'}
+        ` : '<div style="font-size:12px;color:var(--text-dim);">Transcript not available yet</div>'}
       `;
 
       modal.appendChild(content);
@@ -3201,12 +3201,12 @@
           setTimeout(() => pollNoteStatus(noteId), 2000);
         } else {
           // Done processing, update UI
-          document.getElementById('claronote-status-text').textContent = 'Klaar om op te nemen';
+          document.getElementById('claronote-status-text').textContent = 'Ready to record';
           await loadClaroNoteNotes();
         }
       } catch (error) {
         console.error('Polling error:', error);
-        document.getElementById('claronote-status-text').textContent = 'Klaar om op te nemen';
+        document.getElementById('claronote-status-text').textContent = 'Ready to record';
       }
     }
 

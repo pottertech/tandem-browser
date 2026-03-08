@@ -1011,7 +1011,7 @@
       overflow: hidden;
     }
 
-    /* Narrow state (standaard) */
+    /* Narrow state (default) */
     .sidebar[data-state="narrow"] .sidebar-strip {
       width: 48px;
     }
@@ -1040,7 +1040,7 @@
       gap: 8px;
     }
 
-    /* Sidebar item knop */
+    /* Sidebar item button */
     .sidebar-item {
       display: flex;
       align-items: center;
@@ -1064,20 +1064,20 @@
       color: var(--text, #fff);
     }
 
-    /* Active indicator: gekleurde afgeronde vierkant (zoals Opera) */
+    /* Active indicator: colored rounded square (similar to Opera) */
     .sidebar-item.active {
       background: rgba(78,204,163,0.25);
       color: var(--accent, #4ecca3);
     }
 
-    /* Utility item SVG: outline grijs, wit bij hover/active */
+    /* Utility item SVG: gray outline, white on hover/active */
     .sidebar-item:not(.messenger-item) svg {
       width: 20px;
       height: 20px;
       flex-shrink: 0;
     }
 
-    /* Messenger item: gekleurde ronde achtergrond met wit brand logo erin */
+    /* Messenger item: colored rounded background with white brand logo */
     .sidebar-item.messenger-item {
       padding: 0;
     }
@@ -2100,7 +2100,7 @@
       background: var(--success);
     }
 
-    /* Noodrem button — emergency stop */
+    /* Emergency stop button */
     .noodrem-btn {
       margin-left: auto;
       padding: 2px 8px;

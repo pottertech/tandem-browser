@@ -442,23 +442,23 @@
   </div>
 
   <nav class="settings-nav" id="settings-nav">
-    <a href="#general" class="active" data-section="general">⚙️ Algemeen</a>
+    <a href="#general" class="active" data-section="general">⚙️ General</a>
     <a href="#screenshots" data-section="screenshots">📸 Screenshots</a>
     <a href="#voice" data-section="voice">🎙️ Voice</a>
-    <a href="#appearance" data-section="appearance">🎨 Thema</a>
+    <a href="#appearance" data-section="appearance">🎨 Theme</a>
     <a href="#stealth" data-section="stealth">🛡️ Stealth</a>
     <a href="#sync" data-section="sync">🔄 Sync</a>
     <a href="#behavior" data-section="behavior">🧬 Behavioral Learning</a>
-    <a href="#autonomy" data-section="autonomy">🤖 AI Autonomie</a>
+    <a href="#autonomy" data-section="autonomy">🤖 AI Autonomy</a>
     <a href="#data" data-section="data">💾 Data</a>
     <a href="#extensions" data-section="extensions">🧩 Extensions</a>
   </nav>
 
   <div class="settings-body">
 
-    <!-- ═══ Algemeen ═══ -->
+    <!-- ═══ General ═══ -->
     <div class="section" id="general">
-      <h2>⚙️ Algemeen</h2>
+      <h2>⚙️ General</h2>
       <p class="section-desc">Basic settings for Tandem Browser</p>
 
       <div class="field">
@@ -486,12 +486,12 @@
           <div class="field-desc">Interface and search language</div>
         </div>
         <select id="cfg-language">
-          <option value="nl-BE">Nederlands (België)</option>
-          <option value="nl-NL">Nederlands (Nederland)</option>
+          <option value="nl-BE">Dutch (Belgium)</option>
+          <option value="nl-NL">Dutch (Netherlands)</option>
           <option value="en-US">English (US)</option>
           <option value="en-GB">English (UK)</option>
-          <option value="de-DE">Deutsch</option>
-          <option value="fr-FR">Français</option>
+          <option value="de-DE">German</option>
+          <option value="fr-FR">French</option>
         </select>
       </div>
 
@@ -519,7 +519,7 @@
 
       <div class="field">
         <div class="field-info">
-          <div class="field-label">Favorietenbalk tonen</div>
+          <div class="field-label">Show bookmarks bar</div>
           <div class="field-desc">Show the bookmarks bar below the address bar (Cmd+Shift+B)</div>
         </div>
         <label class="toggle">
@@ -536,7 +536,7 @@
 
       <div class="field">
         <div class="field-info">
-          <div class="field-label">Naar clipboard</div>
+          <div class="field-label">To clipboard</div>
           <div class="field-desc">Always on — every screenshot goes to your clipboard</div>
         </div>
         <label class="toggle">
@@ -547,7 +547,7 @@
 
       <div class="field">
         <div class="field-info">
-          <div class="field-label">Lokale folder</div>
+          <div class="field-label">Local folder</div>
           <div class="field-desc">Save screenshots as files</div>
         </div>
         <label class="toggle">
@@ -558,7 +558,7 @@
 
       <div class="field" id="field-localFolderPath">
         <div class="field-info">
-          <div class="field-label">Opslagpad</div>
+          <div class="field-label">Storage path</div>
         </div>
         <input type="text" id="cfg-localFolderPath" placeholder="~/Pictures/Tandem/" />
       </div>
@@ -577,7 +577,7 @@
       <div class="field">
         <div class="field-info">
           <div class="field-label">Google Photos</div>
-          <div class="field-desc">Binnenkort beschikbaar</div>
+          <div class="field-desc">Coming soon</div>
         </div>
         <label class="toggle">
           <input type="checkbox" id="cfg-googlePhotos" disabled>
@@ -597,18 +597,18 @@
           <div class="field-desc">Language for speech recognition</div>
         </div>
         <select id="cfg-voiceLanguage">
-          <option value="nl-BE">Nederlands (België)</option>
-          <option value="nl-NL">Nederlands (Nederland)</option>
+          <option value="nl-BE">Dutch (Belgium)</option>
+          <option value="nl-NL">Dutch (Netherlands)</option>
           <option value="en-US">English (US)</option>
           <option value="en-GB">English (UK)</option>
-          <option value="de-DE">Deutsch</option>
-          <option value="fr-FR">Français</option>
+          <option value="de-DE">German</option>
+          <option value="fr-FR">French</option>
         </select>
       </div>
 
       <div class="field">
         <div class="field-info">
-          <div class="field-label">Auto-send na stilte</div>
+          <div class="field-label">Auto-send after silence</div>
           <div class="field-desc">Auto-send message after a pause in speaking</div>
         </div>
         <label class="toggle">
@@ -619,7 +619,7 @@
 
       <div class="field">
         <div class="field-info">
-          <div class="field-label">Stilte timeout</div>
+          <div class="field-label">Silence timeout</div>
           <div class="field-desc">Wait this long after last word before auto-send</div>
         </div>
         <div class="range-wrap">
@@ -631,7 +631,7 @@
 
     <!-- ═══ Appearance ═══ -->
     <div class="section" id="appearance">
-      <h2>🎨 Thema</h2>
+      <h2>🎨 Theme</h2>
       <p class="section-desc">Color scheme and visual settings</p>
 
       <div class="field">
@@ -649,10 +649,10 @@
       <div class="field">
         <div class="field-info">
           <div class="field-label">Help link</div>
-          <div class="field-desc">Snel toegang tot help en shortcuts</div>
+          <div class="field-desc">Quick access to help and shortcuts</div>
         </div>
         <button type="button" class="btn btn-secondary" onclick="openHelpPage()">
-          📖 Open Help Pagina
+          📖 Open Help Page
         </button>
       </div>
 
@@ -717,7 +717,7 @@
       <div class="field">
         <div class="field-info">
           <div class="field-label">User-Agent</div>
-          <div class="field-desc">Auto matcht de nieuwste Chrome versie</div>
+          <div class="field-desc">Automatically matches the latest Chrome version</div>
         </div>
         <select id="cfg-userAgent">
           <option value="auto">Auto (match Chrome)</option>
@@ -772,7 +772,7 @@
 
       <div class="field">
         <div class="field-info">
-          <div class="field-label">Chrome favorieten sync</div>
+          <div class="field-label">Chrome bookmarks sync</div>
           <div class="field-desc">Auto-import and sync bookmarks from Google Chrome</div>
         </div>
         <label class="toggle">
@@ -834,9 +834,9 @@
       </div>
     </div>
 
-    <!-- ═══ AI Autonomie ═══ -->
+    <!-- ═══ AI Autonomy ═══ -->
     <div class="section" id="autonomy">
-      <h2>🤖 AI Autonomie</h2>
+      <h2>🤖 AI Autonomy</h2>
       <p class="section-desc">Configure what Wingman/Claude can do automatically without asking</p>
 
       <div class="field">
@@ -976,7 +976,7 @@
   </div>
 
   <!-- Toast -->
-  <div class="toast" id="toast">Opgeslagen ✓</div>
+  <div class="toast" id="toast">Saved ✓</div>
 
   <!-- Confirm modal -->
   <div class="modal-overlay" id="modal-overlay">
@@ -984,8 +984,8 @@
       <h3 id="modal-title">Are you sure?</h3>
       <p id="modal-text">This cannot be undone.</p>
       <div class="btn-group">
-        <button class="btn btn-secondary" id="modal-cancel">Annuleren</button>
-        <button class="btn btn-danger" id="modal-confirm">Bevestigen</button>
+        <button class="btn btn-secondary" id="modal-cancel">Cancel</button>
+        <button class="btn btn-danger" id="modal-confirm">Confirm</button>
       </div>
     </div>
   </div>
@@ -1080,9 +1080,9 @@
         });
         if (res.ok) {
           config = await res.json();
-          showToast('Opgeslagen ✓');
+          showToast('Saved ✓');
         }
-      } catch { showToast('Opslaan mislukt ✕'); }
+      } catch { showToast('Save failed ✕'); }
     }
 
     function showToast(msg) {
@@ -1233,9 +1233,9 @@
       showModal('Clear behavioral data?', 'All stored behavioral patterns will be deleted. This cannot be undone.', async () => {
         try {
           await fetch(`${API}/behavior/clear`, { method: 'POST' });
-          showToast('Behavioral data gewist ✓');
+          showToast('Behavioral data cleared ✓');
           loadBehaviorStats();
-        } catch { showToast('Wissen mislukt ✕'); }
+        } catch { showToast('Clear failed ✕'); }
       });
     });
 
@@ -1252,9 +1252,9 @@
           a.download = `tandem-export-${new Date().toISOString().slice(0,10)}.json`;
           a.click();
           URL.revokeObjectURL(url);
-          showToast('Data geëxporteerd ✓');
+          showToast('Data exported ✓');
         }
-      } catch { showToast('Export mislukt ✕'); }
+      } catch { showToast('Export failed ✕'); }
     });
 
     // Import data
@@ -1272,10 +1272,10 @@
           body: JSON.stringify(data),
         });
         if (res.ok) {
-          showToast('Data geïmporteerd ✓');
+          showToast('Data imported ✓');
           loadConfig();
         }
-      } catch { showToast('Import mislukt ✕'); }
+      } catch { showToast('Import failed ✕'); }
       importFile.value = '';
     });
 
@@ -1284,10 +1284,10 @@
       showModal('⚠️ Clear ALL data?', 'This will delete your chat history, config, behavioral data and more. This CANNOT be undone!', async () => {
         try {
           await fetch(`${API}/data/wipe`, { method: 'POST' });
-          showToast('Alle data gewist ✓');
+          showToast('All data cleared ✓');
           loadConfig();
           loadBehaviorStats();
-        } catch { showToast('Wissen mislukt ✕'); }
+        } catch { showToast('Clear failed ✕'); }
       });
     });
 
@@ -1374,11 +1374,11 @@
         const res = await fetch(`${API}/import/chrome/bookmarks`, { method: 'POST' });
         if (res.ok) {
           const data = await res.json();
-          showToast(`${data.count || 0} favorieten gesynchroniseerd ✓`);
+          showToast(`${data.count || 0} bookmarks synced ✓`);
         } else {
-          showToast('Sync mislukt ✕');
+          showToast('Sync failed ✕');
         }
-      } catch { showToast('Sync mislukt ✕'); }
+      } catch { showToast('Sync failed ✕'); }
     });
 
     // ═══ Autonomy settings ═══
@@ -1413,9 +1413,9 @@
         });
         if (res.ok) {
           autonomyConfig = await res.json();
-          showToast('Opgeslagen ✓');
+          showToast('Saved ✓');
         }
-      } catch { showToast('Opslaan mislukt ✕'); }
+      } catch { showToast('Save failed ✕'); }
     }
 
     // Autonomy toggle handlers

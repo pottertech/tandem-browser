@@ -233,7 +233,7 @@
     <div class="sidebar-header"><span>B</span>ookmarks</div>
     <div class="folder-tree" id="folder-tree"></div>
     <div class="sidebar-actions">
-      <button id="btn-new-folder">+ Map</button>
+      <button id="btn-new-folder">+ Folder</button>
       <button id="btn-import-chrome">Chrome Import</button>
     </div>
   </div>
@@ -244,7 +244,7 @@
       <div class="breadcrumb" id="breadcrumb"></div>
       <div class="search-box">
         <span class="search-icon">&#x1F50D;</span>
-        <input type="text" id="search" placeholder="Zoek bookmarks...">
+        <input type="text" id="search" placeholder="Search bookmarks...">
       </div>
       <button id="btn-add-bookmark" class="accent">+ Bookmark</button>
     </div>
@@ -254,16 +254,16 @@
   <!-- Edit dialog -->
   <div class="dialog-overlay" id="dialog-overlay">
     <div class="dialog">
-      <h3 id="dialog-title">Bewerken</h3>
-      <label>Naam</label>
+      <h3 id="dialog-title">Edit</h3>
+      <label>Name</label>
       <input type="text" id="dialog-name">
       <div id="dialog-url-group">
         <label>URL</label>
         <input type="text" id="dialog-url">
       </div>
       <div class="dialog-buttons">
-        <button class="btn-cancel" id="btn-dialog-cancel">Annuleren</button>
-        <button class="btn-save" id="btn-dialog-save">Opslaan</button>
+        <button class="btn-cancel" id="btn-dialog-cancel">Cancel</button>
+        <button class="btn-save" id="btn-dialog-save">Save</button>
       </div>
     </div>
   </div>
@@ -382,7 +382,7 @@
       list.innerHTML = '';
 
       if (items.length === 0) {
-        list.innerHTML = '<div class="empty-state">Geen bookmarks in deze map</div>';
+        list.innerHTML = '<div class="empty-state">No bookmarks in this folder</div>';
         return;
       }
 
@@ -406,8 +406,8 @@
               <div class="bm-url">${count} items</div>
             </div>
             <div class="bm-actions">
-              <button class="edit" data-id="${escapeHtml(item.id || '')}">Bewerk</button>
-              <button class="delete" data-id="${escapeHtml(item.id || '')}">Verwijder</button>
+              <button class="edit" data-id="${escapeHtml(item.id || '')}">Edit</button>
+              <button class="delete" data-id="${escapeHtml(item.id || '')}">Delete</button>
             </div>
           `;
           el.addEventListener('dblclick', () => {
@@ -429,8 +429,8 @@
               <div class="bm-url">${escapeHtml(item.url || '')}</div>
             </div>
             <div class="bm-actions">
-              <button class="edit" data-id="${escapeHtml(item.id || '')}">Bewerk</button>
-              <button class="delete" data-id="${escapeHtml(item.id || '')}">Verwijder</button>
+              <button class="edit" data-id="${escapeHtml(item.id || '')}">Edit</button>
+              <button class="delete" data-id="${escapeHtml(item.id || '')}">Delete</button>
             </div>
           `;
           el.querySelector('.bm-info').addEventListener('click', () => {
@@ -448,7 +448,7 @@
         // Delete button
         el.querySelector('.delete')?.addEventListener('click', async (e) => {
           e.stopPropagation();
-          if (confirm(`Verwijder "${item.name}"?`)) {
+          if (confirm(`Delete "${item.name}"?`)) {
             await fetch(`${API}/bookmarks/remove`, {
               method: 'DELETE',
               headers: { 'Content-Type': 'application/json' },
@@ -467,7 +467,7 @@
       editingId = item ? item.id : null;
       isNewFolder = false;
       isNewBookmark = false;
-      document.getElementById('dialog-title').textContent = item ? 'Bewerken' : 'Nieuw';
+      document.getElementById('dialog-title').textContent = item ? 'Edit' : 'New';
       document.getElementById('dialog-name').value = item ? item.name : '';
       document.getElementById('dialog-url').value = item && item.url ? item.url : '';
       document.getElementById('dialog-url-group').style.display = item && item.type === 'folder' ? 'none' : 'block';
@@ -479,7 +479,7 @@
       editingId = null;
       isNewFolder = true;
       isNewBookmark = false;
-      document.getElementById('dialog-title').textContent = 'Nieuwe Map';
+      document.getElementById('dialog-title').textContent = 'New Folder';
       document.getElementById('dialog-name').value = '';
       document.getElementById('dialog-url').value = '';
       document.getElementById('dialog-url-group').style.display = 'none';
@@ -491,7 +491,7 @@
       editingId = null;
       isNewFolder = false;
       isNewBookmark = true;
-      document.getElementById('dialog-title').textContent = 'Nieuwe Bookmark';
+      document.getElementById('dialog-title').textContent = 'New Bookmark';
       document.getElementById('dialog-name').value = '';
       document.getElementById('dialog-url').value = 'https://';
       document.getElementById('dialog-url-group').style.display = 'block';
@@ -589,19 +589,19 @@
 
     document.getElementById('btn-import-chrome').addEventListener('click', async () => {
       const btn = document.getElementById('btn-import-chrome');
-      btn.textContent = 'Importeren...';
+      btn.textContent = 'Importing...';
       btn.disabled = true;
       try {
         const res = await fetch(`${API}/import/chrome/bookmarks`, { method: 'POST' });
         const data = await res.json();
         if (data.ok) {
-          alert(`${data.count} bookmarks geimporteerd!`);
+          alert(`${data.count} bookmarks imported!`);
           fetchBookmarks();
         } else {
-          alert('Import mislukt: ' + (data.error || 'Onbekende fout'));
+          alert('Import failed: ' + (data.error || 'Unknown error'));
         }
       } catch (e) {
-        alert('Import mislukt: ' + e.message);
+        alert('Import failed: ' + e.message);
       }
       btn.textContent = 'Chrome Import';
       btn.disabled = false;

@@ -10,6 +10,13 @@ Add POST /sessions/fetch endpoint for same-origin API calls via tab context,
 with auth header safety rails, timeout handling, and full test coverage.
 Include security containment review design doc.
 
+- fix: repository-wide English consistency cleanup pass 2
+
+Translate remaining first-party Dutch text outside Markdown in shell UI copy,
+placeholders, comments, notifications, and related test expectations. Keep
+compatibility-sensitive identifiers, locale codes, and persisted/config
+surfaces unchanged where translation would be risky.
+
 ## [v0.44.88] - 2026-03-08
 
 ### Added

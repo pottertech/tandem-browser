@@ -673,7 +673,7 @@ describe('Browser Routes', () => {
 
       expect(res.status).toBe(200);
       expect(res.body).toEqual({ ok: true, sent: true });
-      expect(wingmanAlert).toHaveBeenCalledWith('Hulp nodig', '');
+      expect(wingmanAlert).toHaveBeenCalledWith('Need help', '');
     });
   });
 

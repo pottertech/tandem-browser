@@ -259,10 +259,10 @@ export class ContextBridge {
   /**
    * Get a compact context summary for AI consumption (~500 tokens max).
    * Format:
-   *   Actieve tab: Google Search - https://google.com (tab-abc)
+   *   Active tab: Google Search - https://google.com (tab-abc)
    *   Open tabs: 4 (Google, LinkedIn, GitHub, Tandem Settings)
-   *   Laatste events: navigatie naar google.com (2s geleden), tab switch (15s geleden)
-   *   Voice: inactief
+   *   Recent events: navigation to google.com (2s ago), tab switch (15s ago)
+   *   Voice: inactive
    */
   getContextSummary(): ContextSummary {
     const recentEvents = this.eventStream
@@ -278,9 +278,9 @@ export class ContextBridge {
 
     // Active tab
     if (this.activeTab) {
-      text += `Actieve tab: ${this.activeTab.title || 'Untitled'} — ${this.activeTab.url} (${this.activeTab.tabId})\n`;
+      text += `Active tab: ${this.activeTab.title || 'Untitled'} — ${this.activeTab.url} (${this.activeTab.tabId})\n`;
     } else {
-      text += `Actieve tab: geen\n`;
+      text += `Active tab: none\n`;
     }
 
     // Open tabs
@@ -304,11 +304,11 @@ export class ContextBridge {
         }
         return `${e.type} (${e.ago})`;
       });
-      text += `Laatste events: ${eventDescs.join(', ')}\n`;
+      text += `Recent events: ${eventDescs.join(', ')}\n`;
     }
 
     // Voice
-    text += `Voice: ${this.voiceActive ? 'actief (luistert)' : 'inactief'}\n`;
+    text += `Voice: ${this.voiceActive ? 'active (listening)' : 'inactive'}\n`;
 
     return {
       activeTab: this.activeTab,

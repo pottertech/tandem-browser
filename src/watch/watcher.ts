@@ -148,8 +148,8 @@ export class WatchManager {
       if (changed) {
         watch.changeCount++;
         wingmanAlert(
-          `Pagina veranderd: ${watch.lastTitle || watch.url}`,
-          `${watch.url} is gewijzigd sinds de vorige check.`
+          `Page changed: ${watch.lastTitle || watch.url}`,
+          `${watch.url} changed since the previous check.`
         );
       }
 
@@ -201,7 +201,7 @@ export class WatchManager {
 
     // Check for duplicate
     if (this.state.watches.some(w => w.url === url)) {
-      return { error: 'URL wordt al bewaakt' };
+      return { error: 'URL is already being watched' };
     }
 
     const watch: WatchEntry = {

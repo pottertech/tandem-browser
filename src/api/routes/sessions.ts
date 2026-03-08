@@ -65,7 +65,7 @@ export function registerSessionRoutes(router: Router, ctx: RouteContext): void {
   });
 
   // ═══════════════════════════════════════════════
-  // SESSIONS — Geïsoleerde Browser Sessies
+  // SESSIONS — Isolated Browser Sessions
   // ═══════════════════════════════════════════════
 
   router.get('/sessions/list', async (_req: Request, res: Response) => {
@@ -337,7 +337,7 @@ export function registerSessionRoutes(router: Router, ctx: RouteContext): void {
   });
 
   // ═══════════════════════════════════════════════
-  // AUTH HEADERS — lees auth token uit actieve tab
+  // AUTH HEADERS — read auth token from the active tab
   // ═══════════════════════════════════════════════
 
   router.get('/sessions/auth-headers', async (req: Request, res: Response) => {
@@ -345,7 +345,7 @@ export function registerSessionRoutes(router: Router, ctx: RouteContext): void {
       const wc = await getSessionWC(ctx, req);
       if (!wc) { res.status(500).json({ error: 'No active tab' }); return; }
 
-      // Methode 1: Discord webpack module registry
+      // Method 1: Discord webpack module registry
       const token: string | null = await wc.executeJavaScript(`
         (function() {
           try {
@@ -371,7 +371,7 @@ export function registerSessionRoutes(router: Router, ctx: RouteContext): void {
               });
               if (found) return found;
             }
-            // Methode 2: eerder gevangen via interceptor
+            // Method 2: captured earlier via interceptor
             if (window.__capturedAuthToken) return window.__capturedAuthToken;
             return null;
           } catch(e) { return null; }
@@ -382,7 +382,7 @@ export function registerSessionRoutes(router: Router, ctx: RouteContext): void {
         return res.json({ ok: true, authorization: token });
       }
 
-      // Methode 3: installeer fetch-interceptor voor volgende API call
+      // Method 3: install fetch interceptor for the next API call
       await wc.executeJavaScript(`
         (function() {
           if (window.__authInterceptorActive) return;

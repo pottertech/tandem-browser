@@ -18,7 +18,7 @@ export function registerSidebarRoutes(router: Router, ctx: RouteContext): void {
     } catch (e) { handleRouteError(res, e); }
   });
 
-  // POST /sidebar/items/:id/toggle — enable/disable een item
+  // POST /sidebar/items/:id/toggle — enable/disable an item
   router.post('/sidebar/items/:id/toggle', (req: Request, res: Response) => {
     try {
       const item = ctx.sidebarManager.toggleItem(req.params.id as string);
@@ -27,7 +27,7 @@ export function registerSidebarRoutes(router: Router, ctx: RouteContext): void {
     } catch (e) { handleRouteError(res, e); }
   });
 
-  // POST /sidebar/items/:id/activate — panel openen (of sluiten als al actief)
+  // POST /sidebar/items/:id/activate — open panel (or close it if already active)
   router.post('/sidebar/items/:id/activate', (req: Request, res: Response) => {
     try {
       const cfg = ctx.sidebarManager.getConfig();

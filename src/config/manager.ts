@@ -13,7 +13,7 @@ const log = createLogger('ConfigManager');
  * Stored in ~/.tandem/config.json
  */
 export interface TandemConfig {
-  // Algemeen
+  // General
   general: {
     startPage: 'wingman' | 'duckduckgo' | 'custom';
     customStartUrl: string;

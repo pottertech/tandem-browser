@@ -496,8 +496,8 @@ server.tool(
         createdBy: 'claude',
         assignedTo: 'claude',
         steps: [
-          { description: `Zoek "${query}" via ${searchEngine}`, action: { type: 'navigate', params: { query } }, riskLevel: 'low', requiresApproval: false },
-          { description: `Lees top ${clampedMax} resultaten`, action: { type: 'read_page', params: {} }, riskLevel: 'none', requiresApproval: false },
+          { description: `Search for "${query}" via ${searchEngine}`, action: { type: 'navigate', params: { query } }, riskLevel: 'low', requiresApproval: false },
+          { description: `Read the top ${clampedMax} results`, action: { type: 'read_page', params: {} }, riskLevel: 'none', requiresApproval: false },
         ]
       });
       taskId = task.id;
@@ -564,7 +564,7 @@ server.tool(
           findings.push({
             title: link.text,
             url: link.href,
-            snippet: `(Fout bij laden: ${e instanceof Error ? e.message : String(e)})`,
+            snippet: `(Load error: ${e instanceof Error ? e.message : String(e)})`,
           });
         }
       }

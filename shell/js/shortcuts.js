@@ -116,7 +116,7 @@
         if (skipBtn) skipBtn.style.display = 'none';
       } else {
         if (nextBtn) {
-          nextBtn.textContent = 'Volgende';
+          nextBtn.textContent = 'Next';
           nextBtn.removeAttribute('data-final-step');
         }
         if (skipBtn) skipBtn.style.display = 'block';
@@ -165,11 +165,11 @@
       const statusEl = document.getElementById('import-status');
 
       try {
-        statusEl.innerHTML = '📥 Importeren van Chrome bookmarks...';
+        statusEl.innerHTML = '📥 Importing Chrome bookmarks...';
 
         const bookmarksResp = await fetch('http://localhost:8765/import/chrome/bookmarks', { method: 'POST' });
         if (bookmarksResp.ok) {
-          statusEl.innerHTML += '<br>✅ Bookmarks geïmporteerd';
+          statusEl.innerHTML += '<br>✅ Bookmarks imported';
         }
 
         statusEl.innerHTML += '<br>📚 Importing history...';
@@ -178,22 +178,22 @@
           statusEl.innerHTML += '<br>✅ History imported';
         }
 
-        statusEl.innerHTML += '<br>🍪 Importeren van cookies...';
+        statusEl.innerHTML += '<br>🍪 Importing cookies...';
         const cookiesResp = await fetch('http://localhost:8765/import/chrome/cookies', { method: 'POST' });
         if (cookiesResp.ok) {
-          statusEl.innerHTML += '<br>✅ Cookies geïmporteerd';
+          statusEl.innerHTML += '<br>✅ Cookies imported';
         } else {
-          statusEl.innerHTML += '<br>⚠️ Cookies kunnen niet geïmporteerd worden (encrypted)';
+          statusEl.innerHTML += '<br>⚠️ Cookies could not be imported (encrypted)';
         }
 
-        statusEl.innerHTML += '<br><br>🎉 Import voltooid!';
+        statusEl.innerHTML += '<br><br>🎉 Import complete!';
 
         setTimeout(() => {
           nextOnboardingStep();
         }, 2000);
 
       } catch (error) {
-        statusEl.innerHTML = '❌ Import mislukt. Chrome moet gesloten zijn om data te importeren.';
+        statusEl.innerHTML = '❌ Import failed. Chrome must be closed to import data.';
       }
     }
 
@@ -403,4 +403,3 @@
 
     // Initial check after startup
     setTimeout(checkVaultStatus, 1000);
-

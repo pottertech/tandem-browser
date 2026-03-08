@@ -74,7 +74,7 @@ export class DownloadManager {
           // Notification
           if (Notification.isSupported()) {
             new Notification({
-              title: '📥 Download voltooid',
+              title: '📥 Download complete',
               body: filename,
             }).show();
           }

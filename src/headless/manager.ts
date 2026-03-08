@@ -62,7 +62,7 @@ export class HeadlessManager {
 
         this.window!.webContents.once('did-fail-load', (_event, errorCode, errorDescription) => {
           clearTimeout(timeout);
-          this.showWithAlert('Laad fout', `${url}: ${errorDescription} (${errorCode})`);
+          this.showWithAlert('Load error', `${url}: ${errorDescription} (${errorCode})`);
           reject(new Error(`Load failed: ${errorDescription}`));
         });
 
@@ -175,13 +175,13 @@ export class HeadlessManager {
       // If redirected to a login page, alert
       const loginPatterns = ['/login', '/signin', '/auth', '/sso', '/accounts/'];
       if (loginPatterns.some(p => url.toLowerCase().includes(p))) {
-        this.showWithAlert('Login vereist', `Omgeleid naar: ${url}`);
+        this.showWithAlert('Login required', `Redirected to: ${url}`);
       }
     });
 
     // Detect page crashes
     this.window.webContents.on('render-process-gone', (_event, details) => {
-      this.showWithAlert('Pagina gecrasht', `Reden: ${details.reason}`);
+      this.showWithAlert('Page crashed', `Reason: ${details.reason}`);
     });
 
     this.captchaDetected = false;

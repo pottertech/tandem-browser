@@ -107,6 +107,8 @@
       if (mode === 'region') {
         const region = await selectRegion();
         if (!region) return;
+        // Wait two frames so the overlay is fully painted away before capture
+        await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
         await window.tandem.captureScreenshot('region', region);
         return;
       }

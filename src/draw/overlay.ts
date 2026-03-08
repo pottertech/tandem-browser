@@ -1,6 +1,6 @@
 import type { BrowserWindow} from 'electron';
 import { app, webContents, clipboard, nativeImage } from 'electron';
-import { execFile } from 'child_process';
+import { execFile, execFileSync } from 'child_process';
 import path from 'path';
 import fs from 'fs';
 import os from 'os';
@@ -212,6 +212,27 @@ export class DrawOverlayManager {
 
   async captureApplicationScreenshot(currentUrl: string): Promise<{ ok: boolean; path?: string; error?: string }> {
     try {
+      // Use macOS screencapture for correct color profile handling.
+      // Electron's capturePage().toPNG() doesn't embed the display color profile,
+      // causing color shifts on P3 displays when the file is opened.
+      if (process.platform === 'darwin') {
+        const mediaId = this.win.getMediaSourceId(); // "window:<CGWindowID>:0"
+        const cgWindowId = mediaId.split(':')[1];
+        const tmpPath = path.join(os.tmpdir(), `tandem-appcap-${Date.now()}.png`);
+        try {
+          execFileSync('screencapture', ['-l' + cgWindowId, '-x', '-o', tmpPath]);
+          const buffer = fs.readFileSync(tmpPath);
+          fs.unlinkSync(tmpPath);
+          const { picturesPath, appPath, filename, base64 } = this.persistScreenshotBuffer(buffer, currentUrl);
+          this.win.webContents.send('screenshot-taken', { path: picturesPath, appPath, filename, base64 });
+          return { ok: true, path: picturesPath };
+        } catch (scErr) {
+          log.warn('screencapture failed, falling back to capturePage:', scErr);
+          // Fall through to Electron capture below
+        }
+      }
+
+      // Fallback for non-macOS or if screencapture fails
       const nativeImg = await this.win.capturePage();
       const buffer = nativeImg.toPNG();
       const { picturesPath, appPath, filename, base64 } = this.persistScreenshotBuffer(buffer, currentUrl);

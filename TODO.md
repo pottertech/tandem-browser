@@ -4,7 +4,7 @@
 > release planning, not as the primary public roadmap artifact.
 
 > Twee trappen, één fiets. 🚲
-> Laatst bijgewerkt: 26 februari 2026
+> Laatst bijgewerkt: 8 maart 2026
 
 ---
 
@@ -24,35 +24,55 @@
 | 0.10.0 | Browser Extensions — CRX downloader, gallery (30 ext), toolbar, native messaging, OAuth polyfill, auto-updates, conflict detection, 73 tests | ~3,000+ |
 | — | Agent-Browser Gap features — /snapshot, /network/mock, /sessions, tandem CLI | ~2,000 |
 
-**Totaal: ~39,500 regels code | 81 TS bestanden | 38 src modules | 170+ API endpoints | 124 tests**
+**Totaal (huidige codebase-scan): ~49,923 regels TypeScript in `src/` | 153 TS bestanden in `src/` | 247 API route handlers | 1,021 tests (vitest run output)**
 
 ---
+
+### Status-check (TODO vs echte codebase)
+
+- De roadmap bovenaan (0.1.0 t/m 0.10.0) is historisch en niet meer volledig: `CHANGELOG.md` staat inmiddels op `v0.44.87`.
+- Feature-scope in code is groter dan deze TODO-samenvatting (o.a. `src/sidebar/`, `src/workspaces/`, `src/pinboards/`, `src/sync/`, `src/headless/`).
+- "Scheduled browsing" bestaat al in basisvorm via `WatchManager` + `/watch/*` API; openstaand blijft vooral cron-expressies/UX-polish.
+- Deze TODO blijft de backlog, maar moet periodiek worden gesynchroniseerd met `CHANGELOG.md` en de actuele `src/` modules.
+
 
 ## Openstaande items
 
 ### 🔴 Hoge prioriteit
 
 - [x] **Password Manager** — lokale SQLite + AES-256-GCM database, master password, autofill, generator, `GET /passwords/suggest`, nooit cloud sync
-- [ ] **Print / PDF export** — Cmd+P, PDF export API (print() alleen in context menu nu)
 - [x] **Behavioral Learning modellen** — profiel compiler, typing bigram model, mouse Bézier curves, scroll/click/dagritme modellen, replay engine, fallback gaussians
 - [x] **SPA Rendering bug** — `/page-content` retourneert lege content op dynamische pagina's (zie docs/plans/spa-rendering-bug.md)
 
 ### 🟡 Medium prioriteit — Features
 
-- [x] Session fetch relay — `POST /sessions/fetch` voert same-origin API-calls uit vanuit de tab-context met bestaande browser-auth, zonder auth headers of tokens via de API bloot te geven
-- [ ] Voice + screenshot combo — combi-bericht naar Wingman
-- [ ] Whisper lokaal — offline speech fallback
-- [ ] DOM change detection — meld wat er veranderd is (niet alleen SPA wait)
 - [ ] WebSocket /watch/live — live stream
 - [ ] Notificatie bij gesloten paneel — als Wingman antwoordt
 - [ ] Google Photos upload — config UI bestaat, upload code niet
 - [ ] Configureerbare quick links — nu hardcoded in newtab.html
-- [ ] Cron integratie watches — "check LinkedIn elke ochtend om 9:00"
 - [ ] Configureerbare diff modes — meer dan SHA-256 hash
 - [ ] HAR export — network inspector
 - [ ] Session recording & replay
-- [ ] Scheduled browsing (cron)
-- [ ] Clipboard image paste in chat — plan klaar (docs/plans/clipboard-image-paste.md)
+- [x] Scheduled browsing (basis) — aanwezig via WatchManager + /watch/add|list|remove|check
+
+
+### 🧭 Codebase sweep — voorgestelde onderhoudstaken
+
+- [ ] **Typfout herstellen (docs/research/opera-browser-research.md)**
+  - Probleem: in de sectie over tab snoozing staat "Snoze" i.p.v. "Snooze".
+  - Taak: corrigeer de term en doe een korte spell-check op dezelfde sectie.
+
+- [ ] **Bugfix: robuustere versievergelijking in extension updates (src/extensions/update-checker.ts)**
+  - Probleem: `isNewerVersion()` gebruikt `split('.')` + `Number`, wat fragiel is bij versies met suffixes zoals `1.2.3-beta` (kan `NaN` opleveren en foutieve vergelijkingen geven).
+  - Taak: normalizeer versie-onderdelen (pre-release/build metadata strippen of expliciet semver-parsergedrag implementeren) vóór numerieke vergelijking.
+
+- [ ] **Documentatie-discrepantie oplossen (README.md)**
+  - Probleem: README verwijst naar absolute lokale paden voor `AGENTS.md` en `TODO.md` (`/Users/...`), waardoor links in GitHub-context niet werken.
+  - Taak: vervang door repo-relatieve links en verifieer dat beide links renderen op GitHub.
+
+- [ ] **Testverbetering: versievergelijking afdekken (src/extensions/tests/)**
+  - Probleem: er ontbreekt gerichte coverage voor randgevallen in `isNewerVersion()`.
+  - Taak: voeg unit-tests toe voor o.a. ongelijke lengtes (`1.2` vs `1.2.0`), grotere segmenten (`1.10.0` vs `1.9.9`), en pre-release/suffix invoer.
 
 ### 🟢 Lage prioriteit — Polish & Distributie
 
@@ -81,49 +101,3 @@
 ---
 
 ## Projectstructuur
-
-```
-tandem-browser/
-├── src/                          # 81 TypeScript bestanden, 28,751 regels
-│   ├── api/server.ts             # Express API (170+ endpoints)
-│   ├── main.ts                   # Electron main process
-│   ├── security/                 # 5-layer shield + intelligence upgrade
-│   ├── extensions/               # Browser extension systeem (12 bestanden)
-│   ├── snapshot/                 # Accessibility tree met @refs
-│   ├── network/                  # Inspector + mocking
-│   ├── sessions/                 # Multi-session isolatie
-│   ├── mcp/                      # MCP protocol server
-│   ├── agents/                   # TaskManager, X-Scout, TabLockManager
-│   ├── devtools/                 # CDP bridge
-│   └── ...                       # 28 andere modules
-├── shell/                        # Browser UI (10,191 regels HTML/JS)
-├── cli/                          # tandem CLI (@hydro13/tandem-cli)
-├── docs/
-│   ├── implementations/          # Voltooide implementatie-plannen
-│   │   ├── ai-integratie/        # MCP, EventStream, ChatRouter, Autonomie
-│   │   ├── agent-browser-gaps/   # Snapshot, mock, sessions, CLI
-│   │   ├── linux-portatie/       # Linux portatie roadmap
-│   │   ├── cdp-devtools/         # DevTools Bridge plannen
-│   │   ├── context-menu/         # Context Menu plannen
-│   │   ├── wingman-vision/       # Wingman Vision plannen
-│   │   └── liquid-glass/         # Liquid Glass Lite docs
-│   ├── plans/                    # Niet-geïmplementeerde plannen
-│   ├── archive/                  # Historische documenten
-│   ├── Browser-extensions/       # Extension systeem (10 phases)
-│   ├── agent-tools/              # Agent tools (3 phases + phase 4 TBD)
-│   ├── security-fixes/           # Security fixes
-│   ├── security-shield/          # Security Shield (5 layers)
-│   └── security-upgrade/         # Security Intelligence (9 phases)
-├── scripts/                      # Test & launch scripts
-├── skill/                        # OpenClaw skill file
-├── release/                      # Build artifacts (DMG, ZIP)
-├── README.md
-├── PROJECT.md
-├── CHANGELOG.md
-├── AGENTS.md
-└── TODO.md                       # ← dit bestand
-```
-
----
-
-*GitHub: `hydro13/tandem-browser` (privé) | Stack: Electron 40 + TypeScript + Express*

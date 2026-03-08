@@ -16,6 +16,7 @@ describe('Session Routes', () => {
   let app: ReturnType<typeof createTestApp>;
 
   beforeEach(() => {
+    vi.clearAllMocks();
     ctx = createMockContext();
     app = createTestApp(registerSessionRoutes, ctx);
   });

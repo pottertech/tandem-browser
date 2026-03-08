@@ -52,7 +52,7 @@ vi.mock('fs', () => ({
 
 // ── Imports (after mocks) ────────────────────────────────────────
 
-import { registerMiscRoutes } from '../../routes/misc';
+import { registerMiscRoutes, resetMiscRouteStateForTests } from '../../routes/misc';
 import { createMockContext, createMockWebContents, createTestApp } from '../helpers';
 import type { RouteContext } from '../../context';
 import { getActiveWC } from '../../context';
@@ -70,6 +70,7 @@ describe('misc routes', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    resetMiscRouteStateForTests();
     ctx = createMockContext();
     app = createTestApp(registerMiscRoutes, ctx);
     // Default: no active WC

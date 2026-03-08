@@ -10,6 +10,11 @@ import { handleRouteError } from '../../utils/errors';
 // Module-level live mode state (was a closure variable in server.ts)
 let liveMode = false;
 
+/** Reset module-level route state between isolated test apps. */
+export function resetMiscRouteStateForTests(): void {
+  liveMode = false;
+}
+
 export function registerMiscRoutes(router: Router, ctx: RouteContext): void {
 
   // ═══════════════════════════════════════════════

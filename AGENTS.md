@@ -431,6 +431,7 @@ Robin is the product owner. He:
 - Decides design choices when there are multiple valid options
 - Must be informed about new dependencies
 - Tests the UI visually while you test the code
-- Speaks Dutch; code and documentation should be in English
+- Speaks Dutch; you may reply to Robin in Dutch, but all repository content must remain in English
+- No exceptions for repository language: code, comments, commit messages, docs, plans, TODOs, changelog entries, and handoff files must all be written in English
 
 If you are unsure, ask. One extra question is better than a wrong assumption.

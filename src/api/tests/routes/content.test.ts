@@ -19,6 +19,7 @@ describe('Content Routes', () => {
   let app: ReturnType<typeof createTestApp>;
 
   beforeEach(() => {
+    vi.clearAllMocks();
     ctx = createMockContext();
     app = createTestApp(registerContentRoutes, ctx);
   });

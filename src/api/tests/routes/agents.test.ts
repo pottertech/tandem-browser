@@ -19,6 +19,7 @@ describe('Agent Routes', () => {
   let app: ReturnType<typeof createTestApp>;
 
   beforeEach(() => {
+    vi.clearAllMocks();
     ctx = createMockContext();
     app = createTestApp(registerAgentRoutes, ctx);
   });

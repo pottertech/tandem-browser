@@ -40,6 +40,7 @@ describe('Devtools Routes', () => {
   let app: ReturnType<typeof createTestApp>;
 
   beforeEach(() => {
+    vi.clearAllMocks();
     ctx = createMockContext();
     app = createTestApp(registerDevtoolsRoutes, ctx);
   });

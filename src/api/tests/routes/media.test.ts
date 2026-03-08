@@ -28,6 +28,7 @@ describe('Media Routes', () => {
   let originalFetch: typeof globalThis.fetch;
 
   beforeEach(() => {
+    vi.clearAllMocks();
     ctx = createMockContext();
     app = createTestApp(registerMediaRoutes, ctx);
     originalFetch = globalThis.fetch;

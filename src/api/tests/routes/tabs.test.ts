@@ -19,6 +19,7 @@ describe('Tab Routes', () => {
   let app: ReturnType<typeof createTestApp>;
 
   beforeEach(() => {
+    vi.clearAllMocks();
     ctx = createMockContext();
     app = createTestApp(registerTabRoutes, ctx);
   });

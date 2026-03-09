@@ -2,6 +2,14 @@
 
 All notable changes to Tandem Browser will be documented in this file.
 
+## [v0.57.3] - 2026-03-09
+
+- fix: force 30fps output in ffmpeg conversion
+
+MediaRecorder WebM has variable timestamps that ffmpeg misinterprets
+as 1000fps, making the MP4 unplayable in QuickTime. Adding -r 30
+forces correct framerate.
+
 ## [v0.57.2] - 2026-03-09
 
 - fix: check Screen Recording permission before capture on macOS

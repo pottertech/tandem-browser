@@ -111,6 +111,7 @@ contextBridge.exposeInMainWorld('tandem', {
   showScreenshotMenu: (anchor: { x: number; y: number }) => ipcRenderer.invoke('show-screenshot-menu', anchor),
 
   // Recording
+  getDesktopSource: () => ipcRenderer.invoke('get-desktop-source'),
   startRecording: (mode: 'application' | 'region', region?: { x: number; y: number; width: number; height: number }) =>
     ipcRenderer.invoke('start-recording', { mode, region }),
   stopRecording: () => ipcRenderer.invoke('stop-recording'),

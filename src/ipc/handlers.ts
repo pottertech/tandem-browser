@@ -1,4 +1,4 @@
-import { ipcMain, Menu } from 'electron';
+import { desktopCapturer, ipcMain, Menu } from 'electron';
 import fs from 'fs';
 import path from 'path';
 import type { BrowserWindow } from 'electron';
@@ -115,6 +115,7 @@ export function registerIpcHandlers(deps: IpcDeps): void {
     'is-window-maximized',
     'start-recording',
     'stop-recording',
+    'get-desktop-source',
   ];
   for (const handler of ipcHandlers) {
     try { ipcMain.removeHandler(handler); } catch { /* handler may not exist yet */ }
@@ -252,6 +253,13 @@ export function registerIpcHandlers(deps: IpcDeps): void {
       });
     }
     return result;
+  });
+
+  // ═══ Desktop Source for Renderer Video Capture ═══
+  ipcMain.handle('get-desktop-source', async () => {
+    const sources = await desktopCapturer.getSources({ types: ['window'], fetchWindowIcons: false });
+    const tandemSource = sources.find((s: Electron.DesktopCapturerSource) => s.name.includes('Tandem')) || sources[0];
+    return tandemSource ? { id: tandemSource.id, name: tandemSource.name } : null;
   });
 
   // ═══ Voice IPC ═══

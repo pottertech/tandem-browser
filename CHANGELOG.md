@@ -2,6 +2,27 @@
 
 All notable changes to Tandem Browser will be documented in this file.
 
+## [v0.57.10] - 2026-03-14
+
+- fix: reduce first CodeQL security backlog (security)
+
+What was built/changed:
+- Added shared security helpers for HTML escaping, URL parsing/matching, root-contained path resolution, and lightweight route rate limiting
+- Fixed the flagged bearer-token ReDoS, new-tab DOM XSS, and Google Photos OAuth callback reflected XSS/exception HTML sink
+- Replaced substring-based URL trust checks in main-process auth/search heuristics with URL/hostname parsing
+- Added root-containment path validation for sessions, workflow templates, Chrome import, site/form memory, and extension update paths
+- Added targeted rate limits to the currently flagged sensitive or high-cost API routes plus a global authenticated API ceiling
+- Added focused utility tests for the new security helpers
+
+Why this approach:
+- Prioritizes exploitable sinks and high-signal trust-boundary flaws before broader CodeQL noise
+- Uses structural validation (URL objects, textContent/escaping, root containment) instead of substring checks or superficial filters
+- Avoids new dependencies and keeps behavior changes narrow to the flagged risk surfaces
+
+Tested:
+- npm run verify: passed
+- npx vitest run src/utils/tests/security.test.ts src/utils/tests/utils.test.ts: passed
+
 ## [v0.57.9] - 2026-03-14
 
 - fix: split evaluate request destructuring

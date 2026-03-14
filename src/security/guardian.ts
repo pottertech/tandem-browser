@@ -43,6 +43,10 @@ interface QuarantinedWebContents {
   blockedRequests: number;
 }
 
+function getResourceType(details: { resourceType?: unknown }): string | undefined {
+  return typeof details.resourceType === 'string' ? details.resourceType : undefined;
+}
+
 export class Guardian {
   private db: SecurityDB;
   private shield: NetworkShield;
@@ -176,7 +180,7 @@ export class Guardian {
 
     try {
       const url = details.url;
-      const resourceType = (details as any).resourceType as string | undefined;
+      const resourceType = getResourceType(details);
 
       // Skip internal URLs
       if (url.startsWith('devtools://') || url.startsWith('chrome://') || url.startsWith('file://')) {
@@ -555,7 +559,7 @@ export class Guardian {
     const availability = this.getGatekeeperAvailability();
     const context = {
       url: url.substring(0, 200),
-      resourceType: (details as any).resourceType,
+      resourceType: getResourceType(details),
       method: details.method,
       referrer: details.referrer,
       ...policy.context,
@@ -917,7 +921,7 @@ export class Guardian {
     }
 
     // Only analyze main frame navigations to reduce noise
-    if ((details as any).resourceType !== 'mainFrame') return;
+    if (getResourceType(details) !== 'mainFrame') return;
 
     const mode = this.getModeForDomain(domain);
     const missingHeaders: string[] = [];

@@ -23,6 +23,10 @@ interface WorkspacesFile {
   lastModified?: string;
 }
 
+type LegacyWorkspace = Workspace & {
+  emoji?: string;
+};
+
 const STORAGE_PATH = tandemDir('workspaces.json');
 
 const DEFAULT_COLORS = ['#4285f4', '#4ecca3', '#e94560', '#f0a500', '#9b59b6', '#1abc9c', '#e67e22', '#2ecc71'];
@@ -78,11 +82,11 @@ export class WorkspaceManager {
         const raw = fs.readFileSync(STORAGE_PATH, 'utf-8');
         const data: WorkspacesFile = JSON.parse(raw);
         this.lastModified = data.lastModified;
-        for (const ws of data.workspaces) {
+        for (const ws of data.workspaces as LegacyWorkspace[]) {
           // Migrate old emoji field to icon slug
-          if (!ws.icon && (ws as any).emoji) {
+          if (!ws.icon && ws.emoji) {
             ws.icon = 'home';
-            delete (ws as any).emoji;
+            delete ws.emoji;
           }
           this.workspaces.set(ws.id, ws);
         }

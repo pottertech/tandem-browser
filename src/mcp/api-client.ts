@@ -9,6 +9,7 @@ function getToken(): string {
   return fs.readFileSync(tokenPath, 'utf-8').trim();
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- MCP relays many heterogeneous Tandem API responses
 export async function apiCall(method: string, endpoint: string, body?: any): Promise<any> {
   const token = getToken();
 

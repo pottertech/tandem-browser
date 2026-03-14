@@ -8,10 +8,20 @@ import { createLogger } from '../utils/logger';
 
 const log = createLogger('WorkflowEngine');
 
+type WorkflowVariables = Record<string, unknown>;
+type WorkflowStepResult = unknown;
+
+interface ConditionExecutionResult {
+  condition: boolean;
+  action: 'continue' | 'goto' | 'skip' | 'abort';
+  gotoStep?: string;
+  skipCount?: number;
+}
+
 interface WorkflowStep {
   id: string;
   type: 'navigate' | 'wait' | 'click' | 'type' | 'extract' | 'screenshot' | 'condition' | 'scroll';
-  params: any;
+  params: Record<string, unknown>;
   description?: string;
   retries?: number;
   timeout?: number;
@@ -89,7 +99,7 @@ interface ConditionStep extends WorkflowStep {
     text?: string;
     urlPattern?: string;
     variable?: string;
-    value?: any;
+    value?: unknown;
     onTrue: 'continue' | 'goto' | 'skip' | 'abort';
     onFalse: 'continue' | 'goto' | 'skip' | 'abort';
     gotoStep?: string; // Step ID to jump to
@@ -102,7 +112,7 @@ interface WorkflowDefinition {
   name: string;
   description?: string;
   steps: WorkflowStep[];
-  variables?: { [key: string]: any };
+  variables?: WorkflowVariables;
   createdAt: string;
   updatedAt: string;
 }
@@ -115,11 +125,11 @@ interface WorkflowExecution {
   startedAt: string;
   completedAt?: string;
   error?: string;
-  variables: { [key: string]: any };
+  variables: WorkflowVariables;
   stepResults: Array<{
     stepId: string;
     status: 'completed' | 'failed' | 'skipped';
-    result?: any;
+    result?: WorkflowStepResult;
     error?: string;
     executedAt: string;
   }>;
@@ -204,7 +214,7 @@ export class WorkflowEngine {
   /**
    * Start workflow execution
    */
-  async runWorkflow(workflowId: string, webview: BrowserWindow, initialVariables: { [key: string]: any } = {}): Promise<string> {
+  async runWorkflow(workflowId: string, webview: BrowserWindow, initialVariables: WorkflowVariables = {}): Promise<string> {
     const workflows = await this.getWorkflows();
     const workflow = workflows.find(w => w.id === workflowId);
     
@@ -282,7 +292,7 @@ export class WorkflowEngine {
 
           // Handle condition step results
           if (step.type === 'condition' && result) {
-            const conditionResult = result as { condition: boolean; action: string; gotoStep?: string; skipCount?: number };
+            const conditionResult = result as ConditionExecutionResult;
             
             if (conditionResult.action === 'goto' && conditionResult.gotoStep) {
               const gotoIndex = workflow.steps.findIndex(s => s.id === conditionResult.gotoStep);
@@ -335,7 +345,7 @@ export class WorkflowEngine {
     }
   }
 
-  private async executeStep(step: WorkflowStep, execution: WorkflowExecution, webview: BrowserWindow): Promise<any> {
+  private async executeStep(step: WorkflowStep, execution: WorkflowExecution, webview: BrowserWindow): Promise<WorkflowStepResult> {
     const timeout = step.timeout || DEFAULT_TIMEOUT_MS;
 
     return new Promise((resolve, reject) => {
@@ -471,7 +481,7 @@ export class WorkflowEngine {
     }
   }
 
-  private async executeExtract(step: ExtractStep, execution: WorkflowExecution, webview: BrowserWindow): Promise<any> {
+  private async executeExtract(step: ExtractStep, execution: WorkflowExecution, webview: BrowserWindow): Promise<WorkflowStepResult> {
     const result = await webview.webContents.executeJavaScript(`
       (() => {
         const selector = ${JSON.stringify(step.params.selector || 'body')};
@@ -536,7 +546,7 @@ export class WorkflowEngine {
     `);
   }
 
-  private async executeCondition(step: ConditionStep, execution: WorkflowExecution, webview: BrowserWindow): Promise<any> {
+  private async executeCondition(step: ConditionStep, execution: WorkflowExecution, webview: BrowserWindow): Promise<ConditionExecutionResult> {
     let conditionResult = false;
 
     switch (step.params.condition) {
@@ -568,7 +578,7 @@ export class WorkflowEngine {
     };
   }
 
-  private async checkCondition(params: any, webview: BrowserWindow): Promise<boolean> {
+  private async checkCondition(params: WaitStep['params'], webview: BrowserWindow): Promise<boolean> {
     switch (params.condition) {
       case 'element':
         return await webview.webContents.executeJavaScript(`
@@ -579,7 +589,7 @@ export class WorkflowEngine {
           document.body.textContent.includes(${JSON.stringify(params.text)});
         `);
       case 'url':
-        return new RegExp(params.urlPattern).test(webview.webContents.getURL());
+        return !!params.urlPattern && new RegExp(params.urlPattern).test(webview.webContents.getURL());
       default:
         return false;
     }

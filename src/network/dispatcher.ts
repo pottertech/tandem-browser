@@ -41,6 +41,12 @@ export interface ErrorConsumer {
   handler: (details: Electron.OnErrorOccurredListenerDetails) => void;
 }
 
+function hasResponseHeadersPayload(
+  result: { cancel?: boolean; responseHeaders: Record<string, string[]> } | Record<string, string[]>
+): result is { cancel?: boolean; responseHeaders: Record<string, string[]> } {
+  return 'responseHeaders' in result && !Array.isArray(result.responseHeaders);
+}
+
 export class RequestDispatcher {
   private session: Session;
   private attached = false;
@@ -145,8 +151,8 @@ export class RequestDispatcher {
             return;
           }
           // Support both return shapes: { responseHeaders } or raw headers object
-          if (result && typeof result === 'object' && 'responseHeaders' in result && !Array.isArray((result as any).responseHeaders)) {
-            responseHeaders = (result as { responseHeaders: Record<string, string[]> }).responseHeaders;
+          if (result && typeof result === 'object' && hasResponseHeadersPayload(result)) {
+            responseHeaders = result.responseHeaders;
           } else {
             responseHeaders = result as Record<string, string[]>;
           }

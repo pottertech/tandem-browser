@@ -96,6 +96,7 @@ export class ClaroNoteManager {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- upstream auth payload is not versioned yet
   async getMe(): Promise<any> {
     const auth = this.getAuth();
     if (!auth) throw new Error('Not authenticated');
@@ -226,6 +227,7 @@ export class ClaroNoteManager {
     return createResponse.note.id;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- ClaroNote REST responses vary per endpoint
   private async apiRequest(method: string, endpoint: string, body: any = null, token?: string): Promise<any> {
     const url = `${this.baseUrl}${endpoint}`;
     const headers: Record<string, string> = {

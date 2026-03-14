@@ -2,6 +2,9 @@ import type { BrowserWindow, WebContents} from 'electron';
 import { webContents } from 'electron';
 import type { SyncManager } from '../sync/manager';
 import type { SessionRestoreManager } from '../session/restore';
+import { createLogger } from '../utils/logger';
+
+const log = createLogger('TabManager');
 
 export type TabSource = 'robin' | 'kees' | 'wingman';
 
@@ -217,7 +220,7 @@ export class TabManager {
       `);
     } catch (e) {
       // Log but don't abort — main-process state must still be cleaned up.
-      console.warn(`[TabManager] removeTab IPC failed for ${tabId}:`, e instanceof Error ? e.message : String(e));
+      log.warn(`removeTab IPC failed for ${tabId}:`, e instanceof Error ? e.message : String(e));
     }
 
     this.tabs.delete(tabId);

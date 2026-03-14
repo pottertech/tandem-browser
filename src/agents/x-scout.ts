@@ -71,6 +71,11 @@ interface Finding {
   foundAt: number;
 }
 
+interface PageContentResponse {
+  text?: string;
+  title?: string;
+}
+
 // ============ Utilities ============
 
 function randomDelay(range: { min: number; max: number }): number {
@@ -88,14 +93,14 @@ async function wait(range: { min: number; max: number }): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function api(endpoint: string, method = 'GET', body?: any): Promise<any> {
+async function api<T = unknown>(endpoint: string, method = 'GET', body?: unknown): Promise<T> {
   const opts: RequestInit = { method };
   if (body) {
     opts.headers = { 'Content-Type': 'application/json' };
     opts.body = JSON.stringify(body);
   }
   const res = await fetch(`${API}${endpoint}`, opts);
-  return res.json();
+  return res.json() as Promise<T>;
 }
 
 async function navigate(url: string): Promise<void> {
@@ -116,8 +121,8 @@ async function screenshot(): Promise<string> {
   return Buffer.from(buf).toString('base64');
 }
 
-async function getPageContent(): Promise<any> {
-  return api('/page-content');
+async function getPageContent(): Promise<PageContentResponse> {
+  return api<PageContentResponse>('/page-content');
 }
 
 async function chat(text: string): Promise<void> {

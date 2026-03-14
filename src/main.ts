@@ -4,10 +4,12 @@ process.stderr?.on('error', () => {});
 
 process.on('uncaughtException', (err) => {
   // log is not yet initialized at this point — use console directly for fatal bootstrap errors
+  // eslint-disable-next-line no-console -- early bootstrap failures happen before logger setup
   console.error('[Main] Uncaught exception:', err);
 });
 
 process.on('unhandledRejection', (reason) => {
+  // eslint-disable-next-line no-console -- early bootstrap failures happen before logger setup
   console.error('[Main] Unhandled rejection:', reason);
 });
 

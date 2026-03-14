@@ -26,6 +26,58 @@ interface StoredBlocklistSourceFreshness {
   consecutiveFailures: number;
 }
 
+interface DomainInfoRow {
+  id: number;
+  domain: string;
+  first_seen: number;
+  last_seen: number;
+  visit_count: number;
+  trust_level: number;
+  guardian_mode: string;
+  category: string;
+  notes: string | null;
+}
+
+interface WhitelistEntryRow {
+  id: number;
+  origin_domain: string;
+  destination_domain: string;
+  added_at: string;
+}
+
+interface ScriptFingerprintRow {
+  id: number;
+  domain: string;
+  script_url: string;
+  script_hash: string | null;
+  first_seen: number;
+  last_seen: number;
+  trusted: number;
+}
+
+interface AstMatchRow {
+  script_hash: string | null;
+  normalized_hash: string | null;
+  ast_hash: string;
+  domain: string;
+  script_url: string;
+  first_seen: number;
+}
+
+interface WidespreadAstScriptRow {
+  ast_hash: string;
+  domain_count: number;
+  hash_variant_count: number;
+  first_seen: number;
+}
+
+interface AstFeatureRow {
+  domain: string;
+  script_url: string;
+  ast_hash: string | null;
+  ast_features: string;
+}
+
 export class SecurityDB {
   private db: Database.Database;
 
@@ -404,7 +456,7 @@ export class SecurityDB {
   }
 
   getDomainInfo(domain: string): DomainInfo | null {
-    const row = this.stmtGetDomainInfo.get(domain) as any;
+    const row = this.stmtGetDomainInfo.get(domain) as DomainInfoRow | undefined;
     if (!row) return null;
     return {
       id: row.id,
@@ -447,7 +499,7 @@ export class SecurityDB {
   }
 
   getDomains(limit = 100): DomainInfo[] {
-    const rows = this.stmtGetDomains.all(limit) as any[];
+    const rows = this.stmtGetDomains.all(limit) as DomainInfoRow[];
     return rows.map(row => ({
       id: row.id,
       domain: row.domain,
@@ -480,7 +532,7 @@ export class SecurityDB {
   }
 
   getWhitelistEntries(): WhitelistEntry[] {
-    const rows = this.stmtGetWhitelistEntries.all() as any[];
+    const rows = this.stmtGetWhitelistEntries.all() as WhitelistEntryRow[];
     return rows.map(row => ({
       id: row.id,
       originDomain: row.origin_domain,
@@ -492,7 +544,7 @@ export class SecurityDB {
   // === Script fingerprints ===
 
   getScriptFingerprint(domain: string, scriptUrl: string): { id: number; domain: string; scriptUrl: string; scriptHash: string | null; firstSeen: number; lastSeen: number; trusted: boolean } | null {
-    const row = this.stmtGetScriptFingerprint.get(domain, scriptUrl) as any;
+    const row = this.stmtGetScriptFingerprint.get(domain, scriptUrl) as ScriptFingerprintRow | undefined;
     if (!row) return null;
     return {
       id: row.id,
@@ -517,7 +569,7 @@ export class SecurityDB {
   }
 
   getScriptsByDomain(domain: string, limit = 100): { id: number; scriptUrl: string; scriptHash: string | null; firstSeen: number; lastSeen: number; trusted: boolean }[] {
-    const rows = this.stmtGetScriptsByDomain.all(domain, limit) as any[];
+    const rows = this.stmtGetScriptsByDomain.all(domain, limit) as ScriptFingerprintRow[];
     return rows.map(row => ({
       id: row.id,
       scriptUrl: row.script_url,
@@ -559,7 +611,7 @@ export class SecurityDB {
   }
 
   getAstMatches(astHash: string): { scriptHash: string | null; normalizedHash: string | null; astHash: string; domain: string; scriptUrl: string; firstSeen: number }[] {
-    const rows = this.stmtGetAstMatches.all(astHash) as any[];
+    const rows = this.stmtGetAstMatches.all(astHash) as AstMatchRow[];
     return rows.map(row => ({
       scriptHash: row.script_hash,
       normalizedHash: row.normalized_hash,
@@ -571,7 +623,7 @@ export class SecurityDB {
   }
 
   getWidespreadAstScripts(): { astHash: string; domainCount: number; hashVariantCount: number; firstSeen: number }[] {
-    const rows = this.stmtGetWidespreadAstScripts.all() as any[];
+    const rows = this.stmtGetWidespreadAstScripts.all() as WidespreadAstScriptRow[];
     return rows.map(row => ({
       astHash: row.ast_hash,
       domainCount: row.domain_count,
@@ -585,7 +637,7 @@ export class SecurityDB {
   }
 
   getScriptsWithAstFeatures(): { domain: string; scriptUrl: string; astHash: string | null; astFeatures: string }[] {
-    const rows = this.stmtGetAstFeaturesForBlockedCheck.all() as any[];
+    const rows = this.stmtGetAstFeaturesForBlockedCheck.all() as AstFeatureRow[];
     return rows.map(row => ({
       domain: row.domain,
       scriptUrl: row.script_url,

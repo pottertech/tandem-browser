@@ -8,6 +8,26 @@ const INTERACTIVE_ROLES = new Set([
   'combobox', 'menuitem', 'tab', 'searchbox',
 ]);
 
+interface CDPAXValue {
+  value?: string | number | boolean;
+}
+
+interface CDPAXProperty {
+  name: string;
+  value?: CDPAXValue;
+}
+
+interface CDPAXNode {
+  nodeId: string;
+  backendDOMNodeId?: number;
+  childIds?: string[];
+  role?: CDPAXValue;
+  name?: CDPAXValue;
+  value?: CDPAXValue;
+  description?: CDPAXValue;
+  properties?: CDPAXProperty[];
+}
+
 /**
  * SnapshotManager — Provides accessibility tree snapshots via CDP.
  *
@@ -60,7 +80,7 @@ export class SnapshotManager {
 
     // Get the full accessibility tree
     const result = await this.devtools.sendCommand('Accessibility.getFullAXTree', {});
-    const rawNodes: Record<string, any>[] = result.nodes || [];
+    const rawNodes = (result.nodes || []) as CDPAXNode[];
 
     // Build tree from flat CDP node list
     let tree = this.buildTree(rawNodes);
@@ -265,7 +285,7 @@ export class SnapshotManager {
   async getAccessibilityTree(options?: SnapshotOptions): Promise<AccessibilityNode[]> {
     await this.devtools.sendCommand('Accessibility.enable', {});
     const result = await this.devtools.sendCommand('Accessibility.getFullAXTree', {});
-    const rawNodes: Record<string, any>[] = result.nodes || [];
+    const rawNodes = (result.nodes || []) as CDPAXNode[];
     let tree = this.buildTree(rawNodes);
 
     if (options?.interactive) {
@@ -310,17 +330,17 @@ export class SnapshotManager {
    * Build a tree structure from CDP's flat AXNode list.
    * CDP returns a flat array where each node has a childIds array.
    */
-  private buildTree(rawNodes: Record<string, any>[]): AccessibilityNode[] {
+  private buildTree(rawNodes: CDPAXNode[]): AccessibilityNode[] {
     if (rawNodes.length === 0) return [];
 
     // Index nodes by nodeId
-    const nodeMap = new Map<string, Record<string, any>>();
+    const nodeMap = new Map<string, CDPAXNode>();
     for (const raw of rawNodes) {
       nodeMap.set(raw.nodeId, raw);
     }
 
     // Convert a raw CDP node to our AccessibilityNode
-    const convert = (raw: Record<string, any>): AccessibilityNode => {
+    const convert = (raw: CDPAXNode): AccessibilityNode => {
       const role = this.extractProperty(raw, 'role') || 'none';
       const name = this.extractProperty(raw, 'name');
       const value = this.extractProperty(raw, 'value');
@@ -467,18 +487,18 @@ export class SnapshotManager {
   // Private — Property extraction from CDP AXNodes
   // ═══════════════════════════════════════════════
 
-  private extractProperty(raw: Record<string, any>, propName: string): string {
+  private extractProperty(raw: CDPAXNode, propName: string): string {
     if (propName === 'role' && raw.role) {
-      return raw.role.value || '';
+      return typeof raw.role.value === 'string' ? raw.role.value : String(raw.role.value ?? '');
     }
     if (propName === 'name' && raw.name) {
-      return raw.name.value || '';
+      return typeof raw.name.value === 'string' ? raw.name.value : String(raw.name.value ?? '');
     }
     if (propName === 'value' && raw.value) {
-      return raw.value.value || '';
+      return typeof raw.value.value === 'string' ? raw.value.value : String(raw.value.value ?? '');
     }
     if (propName === 'description' && raw.description) {
-      return raw.description.value || '';
+      return typeof raw.description.value === 'string' ? raw.description.value : String(raw.description.value ?? '');
     }
 
     if (raw.properties) {
@@ -491,7 +511,7 @@ export class SnapshotManager {
     return '';
   }
 
-  private extractNumericProperty(raw: Record<string, any>, propName: string): number | undefined {
+  private extractNumericProperty(raw: CDPAXNode, propName: string): number | undefined {
     if (raw.properties) {
       for (const prop of raw.properties) {
         if (prop.name === propName) {
@@ -503,7 +523,7 @@ export class SnapshotManager {
     return undefined;
   }
 
-  private extractBooleanProperty(raw: Record<string, any>, propName: string): boolean | undefined {
+  private extractBooleanProperty(raw: CDPAXNode, propName: string): boolean | undefined {
     if (raw.properties) {
       for (const prop of raw.properties) {
         if (prop.name === propName) {

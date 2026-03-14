@@ -1,5 +1,5 @@
 import type { BrowserWindow} from 'electron';
-const TurndownService = require('turndown');
+import TurndownService = require('turndown');
 import { createLogger } from '../utils/logger';
 
 const log = createLogger('ContentExtractor');
@@ -72,7 +72,7 @@ interface GenericContent {
 }
 
 export class ContentExtractor {
-  private turndown: any;
+  private turndown: TurndownService;
 
   constructor() {
     this.turndown = new TurndownService({

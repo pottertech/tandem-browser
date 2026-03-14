@@ -28,4 +28,11 @@ export default tseslint.config(
       '@typescript-eslint/no-require-imports': 'off',
     },
   },
+  {
+    files: ['src/**/*.test.ts', 'src/**/tests/**/*.ts', 'src/api/tests/helpers.ts'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+      'no-console': 'off',
+    },
+  },
 );

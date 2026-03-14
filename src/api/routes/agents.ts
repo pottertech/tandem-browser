@@ -3,6 +3,7 @@ import type { RouteContext} from '../context';
 import { getActiveWC } from '../context';
 import { handleRouteError } from '../../utils/errors';
 import { DEFAULT_TIMEOUT_MS } from '../../utils/constants';
+import type { TaskStatus } from '../../agents/task-manager';
 
 export function registerAgentRoutes(router: Router, ctx: RouteContext): void {
   // ═══════════════════════════════════════════════
@@ -12,7 +13,7 @@ export function registerAgentRoutes(router: Router, ctx: RouteContext): void {
   router.get('/tasks', (req: Request, res: Response) => {
     try {
       const status = req.query.status as string | undefined;
-      const tasks = ctx.taskManager.listTasks(status as any);
+      const tasks = ctx.taskManager.listTasks(status as TaskStatus | undefined);
       res.json(tasks);
     } catch (e) {
       handleRouteError(res, e);

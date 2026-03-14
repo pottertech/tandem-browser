@@ -415,6 +415,7 @@ export class DevToolsManager {
   // ═══ Raw CDP ═══
 
   /** Send an arbitrary CDP command (for advanced use) */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- CDP command payloads are heterogeneous and caller-defined
   async sendCommand(method: string, params?: Record<string, any>): Promise<any> {
     const wc = await this.ensureAttached();
     if (!wc) throw new Error('No active tab or CDP attach failed');
@@ -423,6 +424,7 @@ export class DevToolsManager {
   }
 
   /** Send a CDP command to a specific attached tab without switching the primary target. */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- CDP command payloads are heterogeneous and caller-defined
   async sendCommandToTab(wcId: number, method: string, params?: Record<string, any>): Promise<any> {
     const wc = await this.attachToTab(wcId, { makePrimary: false });
     if (!wc) throw new Error(`No tab for webContents ${wcId} or CDP attach failed`);
@@ -433,6 +435,7 @@ export class DevToolsManager {
   // ═══ Evaluate ═══
 
   /** Evaluate JavaScript in the page context via CDP (more powerful than executeJS) */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Runtime.evaluate returns arbitrary page values
   async evaluate(expression: string, opts?: { returnByValue?: boolean; awaitPromise?: boolean }): Promise<any> {
     const wc = await this.ensureAttached();
     if (!wc) throw new Error('No active tab or CDP attach failed');
@@ -452,6 +455,7 @@ export class DevToolsManager {
   }
 
   /** Evaluate JavaScript in a specific tab without switching the primary target. */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Runtime.evaluate returns arbitrary page values
   async evaluateInTab(wcId: number, expression: string, opts?: { returnByValue?: boolean; awaitPromise?: boolean }): Promise<any> {
     const wc = await this.attachToTab(wcId, { makePrimary: false });
     if (!wc) throw new Error(`No tab for webContents ${wcId} or CDP attach failed`);

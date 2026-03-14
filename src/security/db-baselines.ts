@@ -45,7 +45,7 @@ export class SecurityBaselinesDB {
     );
   }
 
-  private mapZeroDayRow(row: any): ZeroDayCandidate {
+  private mapZeroDayRow(row: ZeroDayCandidateRow): ZeroDayCandidate {
     return {
       id: row.id,
       detectedAt: row.detected_at,
@@ -60,7 +60,7 @@ export class SecurityBaselinesDB {
   }
 
   getBaseline(domain: string, metric: string): BaselineEntry | null {
-    const row = this.stmtGetBaseline.get(domain, metric) as any;
+    const row = this.stmtGetBaseline.get(domain, metric) as BaselineRow | undefined;
     if (!row) return null;
     return {
       domain: row.domain,
@@ -73,7 +73,7 @@ export class SecurityBaselinesDB {
   }
 
   getBaselinesByDomain(domain: string): BaselineEntry[] {
-    const rows = this.stmtGetBaselinesByDomain.all(domain) as any[];
+    const rows = this.stmtGetBaselinesByDomain.all(domain) as BaselineRow[];
     return rows.map(row => ({
       domain: row.domain,
       metric: row.metric,
@@ -106,12 +106,12 @@ export class SecurityBaselinesDB {
   }
 
   getZeroDayCandidates(since: number): ZeroDayCandidate[] {
-    const rows = this.stmtGetZeroDayCandidates.all(since) as any[];
+    const rows = this.stmtGetZeroDayCandidates.all(since) as ZeroDayCandidateRow[];
     return rows.map(row => this.mapZeroDayRow(row));
   }
 
   getOpenZeroDayCandidates(): ZeroDayCandidate[] {
-    const rows = this.stmtGetOpenZeroDayCandidates.all() as any[];
+    const rows = this.stmtGetOpenZeroDayCandidates.all() as ZeroDayCandidateRow[];
     return rows.map(row => this.mapZeroDayRow(row));
   }
 
@@ -119,4 +119,25 @@ export class SecurityBaselinesDB {
     const result = this.stmtResolveZeroDayCandidate.run(resolution, Date.now(), id);
     return result.changes > 0;
   }
+}
+
+interface BaselineRow {
+  domain: string;
+  metric: string;
+  expected_value: number;
+  tolerance: number;
+  sample_count: number;
+  last_updated: string;
+}
+
+interface ZeroDayCandidateRow {
+  id: number;
+  detected_at: number;
+  domain: string;
+  anomaly_type: string;
+  baseline_deviation: number;
+  details: string;
+  resolved: number;
+  resolution: string | null;
+  resolved_at: number | null;
 }

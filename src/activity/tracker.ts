@@ -1,10 +1,24 @@
 import type { BrowserWindow } from 'electron';
 import type { PanelManager } from '../panel/manager';
+import type { ActivityEvent } from '../panel/manager';
 import type { DrawOverlayManager } from '../draw/overlay';
 import type { WingmanStream } from './wingman-stream';
 import { createLogger } from '../utils/logger';
 
 const log = createLogger('ActivityTracker');
+const PANEL_ACTIVITY_TYPES: ReadonlySet<ActivityEvent['type']> = new Set([
+  'navigate',
+  'click',
+  'scroll',
+  'input',
+  'tab-switch',
+  'tab-open',
+  'tab-close',
+]);
+
+function isPanelActivityType(value: string): value is ActivityEvent['type'] {
+  return PANEL_ACTIVITY_TYPES.has(value as ActivityEvent['type']);
+}
 
 export interface ActivityEntry {
   id: number;
@@ -52,10 +66,9 @@ export class ActivityTracker {
     }
 
     // Log to panel
-    this.panelManager.logActivity(
-      data.type as any,
-      data as Record<string, unknown>
-    );
+    if (isPanelActivityType(data.type)) {
+      this.panelManager.logActivity(data.type, data as Record<string, unknown>);
+    }
 
     // Stream to Wingman (Wingman Vision)
     if (this.wingmanStream) {

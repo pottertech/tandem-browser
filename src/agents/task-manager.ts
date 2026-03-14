@@ -27,11 +27,11 @@ export type StepStatus = 'pending' | 'running' | 'done' | 'skipped' | 'rejected'
 export interface TaskStep {
   id: string;
   description: string;
-  action: { type: string; params: Record<string, any> };
+  action: { type: string; params: Record<string, unknown> };
   riskLevel: RiskLevel;
   requiresApproval: boolean;
   status: StepStatus;
-  result?: any;
+  result?: unknown;
   startedAt?: number;
   completedAt?: number;
 }
@@ -44,7 +44,7 @@ export interface AITask {
   status: TaskStatus;
   steps: TaskStep[];
   currentStep: number;
-  results: any[];
+  results: unknown[];
   createdAt: number;
   updatedAt: number;
   completedAt?: number;
@@ -329,7 +329,7 @@ export class TaskManager extends EventEmitter {
 
   // ── Task Execution Updates ──
 
-  updateStepStatus(taskId: string, stepIndex: number, status: StepStatus, result?: any): AITask | null {
+  updateStepStatus(taskId: string, stepIndex: number, status: StepStatus, result?: unknown): AITask | null {
     const task = this.getTask(taskId);
     if (!task || !task.steps[stepIndex]) return null;
 
@@ -367,7 +367,7 @@ export class TaskManager extends EventEmitter {
     }
   }
 
-  markTaskDone(taskId: string, results?: any[]): void {
+  markTaskDone(taskId: string, results?: unknown[]): void {
     const task = this.getTask(taskId);
     if (task) {
       task.status = 'done';

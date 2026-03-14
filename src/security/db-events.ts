@@ -61,7 +61,7 @@ export class SecurityEventsDB {
     );
   }
 
-  private mapEventRow(row: any): SecurityEvent {
+  private mapEventRow(row: EventRow): SecurityEvent {
     return {
       id: row.id,
       timestamp: row.timestamp,
@@ -100,19 +100,19 @@ export class SecurityEventsDB {
   }
 
   getRecentEvents(limit: number, severity?: string, category?: string): SecurityEvent[] {
-    let rows: unknown[];
+    let rows: EventRow[];
     if (category) {
-      rows = this.stmtGetRecentEventsByCategory.all(category, limit);
+      rows = this.stmtGetRecentEventsByCategory.all(category, limit) as EventRow[];
     } else if (severity) {
-      rows = this.stmtGetRecentEventsBySeverity.all(severity, limit);
+      rows = this.stmtGetRecentEventsBySeverity.all(severity, limit) as EventRow[];
     } else {
-      rows = this.stmtGetRecentEvents.all(limit);
+      rows = this.stmtGetRecentEvents.all(limit) as EventRow[];
     }
-    return (rows as any[]).map(row => this.mapEventRow(row));
+    return rows.map(row => this.mapEventRow(row));
   }
 
   getEventsForDomain(domain: string, limit: number): SecurityEvent[] {
-    const rows = this.stmtGetEventsForDomain.all(domain, limit) as any[];
+    const rows = this.stmtGetEventsForDomain.all(domain, limit) as EventRow[];
     return rows.map(row => this.mapEventRow(row));
   }
 
@@ -128,12 +128,12 @@ export class SecurityEventsDB {
   }
 
   getNewDomains(since: number): { domain: string; firstSeen: number }[] {
-    const rows = this.stmtGetNewDomains.all(since) as any[];
+    const rows = this.stmtGetNewDomains.all(since) as DomainRow[];
     return rows.map(row => ({ domain: row.domain, firstSeen: row.first_seen }));
   }
 
   getTrustChanges(since: number): TrustChange[] {
-    const rows = this.stmtGetTrustChanges.all(since) as any[];
+    const rows = this.stmtGetTrustChanges.all(since) as TrustChangeRow[];
     return rows.map(row => {
       try {
         const details = JSON.parse(row.details);
@@ -157,7 +157,7 @@ export class SecurityEventsDB {
   }
 
   getRecentAnomalies(limit: number): SecurityEvent[] {
-    const rows = this.stmtGetRecentAnomalyEvents.all(limit) as any[];
+    const rows = this.stmtGetRecentAnomalyEvents.all(limit) as EventRow[];
     return rows.map(row => this.mapEventRow(row));
   }
 
@@ -166,4 +166,29 @@ export class SecurityEventsDB {
     const result = this.stmtPruneOldEvents.run(cutoff);
     return result.changes;
   }
+}
+
+interface EventRow {
+  id: number;
+  timestamp: number;
+  domain: string | null;
+  tab_id: string | null;
+  event_type: SecurityEvent['eventType'];
+  severity: SecurityEvent['severity'];
+  category: SecurityEvent['category'];
+  details: string;
+  action_taken: SecurityEvent['actionTaken'];
+  false_positive: number;
+  confidence?: number;
+}
+
+interface DomainRow {
+  domain: string;
+  first_seen: number;
+}
+
+interface TrustChangeRow {
+  domain: string;
+  details: string;
+  timestamp: number;
 }

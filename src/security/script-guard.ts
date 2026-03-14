@@ -474,8 +474,8 @@ export class ScriptGuard {
   private async analyzeExternalScript(wcId: number, scriptId: string, url: string, domain: string): Promise<void> {
     const state = this.getOrCreateTabState(wcId);
     try {
-      const result = await this.devToolsManager.sendCommandToTab(wcId, 'Debugger.getScriptSource', { scriptId });
-      const source = (result as any)?.scriptSource;
+      const result = await this.devToolsManager.sendCommandToTab(wcId, 'Debugger.getScriptSource', { scriptId }) as { scriptSource?: string };
+      const source = result?.scriptSource;
       if (!source || typeof source !== 'string') return;
       if (source.length > MAX_SCRIPT_SIZE) return;
 

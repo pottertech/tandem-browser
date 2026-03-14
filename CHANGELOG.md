@@ -2,6 +2,24 @@
 
 All notable changes to Tandem Browser will be documented in this file.
 
+## [v0.57.11] - 2026-03-14
+
+- fix: harden extension and task-manager boundaries (security)
+
+What was built/changed:
+- Added shared validation helpers for extension IDs, native messaging host names, and absolute path containment inside trusted roots
+- Hardened CRX downloader, extension loader, and native-messaging proxy against path traversal through extension IDs, extension paths, host manifest names, and manifest patch paths
+- Hardened TaskManager autonomy updates against prototype-polluting payloads and validated task IDs/step indexes before file or array writes
+- Added focused tests for the new extension path validation and task-manager pollution guards
+
+Why this approach:
+- These findings are still high-signal because the inputs cross trust boundaries into filesystem paths and mutable object/array writes
+- Fixing at the shared boundary points covers all current callers without broad rewrites or new dependencies
+
+Tested:
+- npm run verify: passed
+- npx vitest run src/agents/tests/task-manager.test.ts src/extensions/tests/extensions.test.ts src/utils/tests/security.test.ts: passed
+
 ## [v0.57.10] - 2026-03-14
 
 - fix: reduce first CodeQL security backlog (security)

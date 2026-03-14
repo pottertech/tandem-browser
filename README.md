@@ -28,23 +28,25 @@ Tandem is built around a two-layer model:
 
 ## Why Tandem For OpenClaw?
 
-OpenClaw users usually hit the same limit with generic browsers and one-off
-automation scripts: the agent can do isolated actions, but it does not get a
-shared browser environment that stays observable, controllable, and close to
-the human.
-
-Tandem exists to close that gap.
+OpenClaw can now connect to your real Chrome session via `profile="user"`.
+Tandem is what that looks like when it is built as a browser instead of
+adapted from one.
 
 With Tandem, OpenClaw gets:
 
-- a local browser API for tabs, navigation, snapshots, sessions, devtools, and
-  controlled automation
-- a browser that is designed from the start for human + agent collaboration on
-  the same machine
-- a local-first workflow that does not depend on a remote browser vendor or a
-  cloud automation service
+- a browser designed from the start for human + agent collaboration on the
+  same machine
+- a 250-endpoint local API for tabs, navigation, snapshots, sessions,
+  devtools, network mocking, and controlled automation
+- a six-layer security model built around the fact that an AI has access to
+  live web content
 - a browser surface where the human stays in the loop for ambiguous or risky
-  situations instead of silently handing everything to the agent
+  situations, with explicit handoff points instead of silent automation
+- a local-first workflow with no dependency on a remote browser vendor or
+  cloud automation service
+
+Tandem and OpenClaw's built-in browser tools are complementary. Use whichever
+fits the task.
 
 For OpenClaw users, the point is not "AI inside a browser". The point is a
 browser that OpenClaw can work with seriously.

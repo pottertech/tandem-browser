@@ -22,6 +22,29 @@ Tandem is built around a two-layer model:
 - invisible layer: Electron services, the local HTTP API, security systems,
   OpenClaw integration, and agent tooling
 
+## Why Tandem For OpenClaw?
+
+OpenClaw users usually hit the same limit with generic browsers and one-off
+automation scripts: the agent can do isolated actions, but it does not get a
+shared browser environment that stays observable, controllable, and close to
+the human.
+
+Tandem exists to close that gap.
+
+With Tandem, OpenClaw gets:
+
+- a local browser API for tabs, navigation, snapshots, sessions, devtools, and
+  controlled automation
+- a browser that is designed from the start for human + agent collaboration on
+  the same machine
+- a local-first workflow that does not depend on a remote browser vendor or a
+  cloud automation service
+- a browser surface where the human stays in the loop for ambiguous or risky
+  situations instead of silently handing everything to the agent
+
+For OpenClaw users, the point is not "AI inside a browser". The point is a
+browser that OpenClaw can work with seriously.
+
 ## Status
 
 Tandem is currently a public `developer preview`.
@@ -39,6 +62,14 @@ The goal of making the repository public is not just to show the project. It is
 also to let other contributors, maintainers, and OpenClaw-adjacent builders
 help improve the browser over time.
 
+If you are an OpenClaw maintainer or power user, the intended reading of this
+repo is:
+
+- real project
+- early public state
+- open for contributors
+- not yet positioned as a polished mass-user browser release
+
 ## OpenClaw-First Positioning
 
 Tandem is built around collaboration with OpenClaw.
@@ -48,6 +79,22 @@ Tandem is built around collaboration with OpenClaw.
 - the security model is shaped by the fact that OpenClaw has access to a live browser
 - Tandem is maintained by the same maintainer behind OpenClaw and is intended as a first-party companion browser
 - the repository may still be useful for general Electron browser experimentation, but the product itself is intentionally OpenClaw-first
+
+## Typical OpenClaw Workflows
+
+Tandem is most useful when OpenClaw needs more than a single scripted page
+action.
+
+Examples:
+
+- research workflows across multiple tabs, where OpenClaw opens, inspects, and
+  summarizes pages while the human keeps browsing
+- SPA inspection, where OpenClaw uses snapshots, DOM search, and network or
+  devtools surfaces instead of guessing from raw HTML alone
+- session-aware tasks, where OpenClaw can operate inside the human's real
+  authenticated browser context
+- human-in-the-loop workflows, where captchas, risky actions, or uncertain
+  cases are surfaced back to the human instead of hidden
 
 ## What Tandem Does
 
@@ -69,21 +116,24 @@ Tandem is built around collaboration with OpenClaw.
 - shell-level overlays for screenshots and annotations that stay outside the
   page JavaScript context
 
-## Security Model
+## Security Principles
 
-If an AI can read and act on live web content, the browser becomes part of the
-threat model. Tandem treats external content as hostile by default and adds a
-multi-layer security stack before content reaches the page or the agent.
+Tandem treats security as part of the OpenClaw integration story, not as a
+separate afterthought.
 
-Current protections include:
+The high-level rules are:
 
-- network-level threat feed blocking
-- outbound request checks
-- runtime script inspection
-- behavior monitoring
-- agent-facing decision points for ambiguous cases
+- local-first: the browser runtime itself does not depend on a Tandem cloud
+- local API only: the Tandem API binds to `127.0.0.1`
+- human remains the dead-man switch: risky or blocked flows can be surfaced back
+  to the user
+- hostile-content mindset: web content is treated as potentially adversarial
+- separation of layers: browser pages should not directly observe or fingerprint
+  the agent layer
 
-This project is intentionally more paranoid than a normal desktop browser shell.
+Current protections include network filtering, outbound request checks, runtime
+script inspection, behavior monitoring, and agent-facing decision points for
+ambiguous cases.
 
 ## Quick Start
 
@@ -112,6 +162,25 @@ npm start
 ```
 
 On macOS, the start script clears Electron quarantine flags before launch.
+
+## First OpenClaw Check
+
+If you want the shortest possible proof that Tandem is useful to OpenClaw, do
+this:
+
+```bash
+npm install
+npm start
+
+TOKEN="$(cat ~/.tandem/api-token)"
+
+curl -sS http://127.0.0.1:8765/status
+curl -sS http://127.0.0.1:8765/tabs/list \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+If those return live JSON, Tandem is up and OpenClaw has a usable control
+surface.
 
 ## OpenClaw Integration
 
@@ -186,16 +255,22 @@ Examples:
 ```bash
 curl http://127.0.0.1:8765/status
 
-curl -X POST http://127.0.0.1:8765/navigate \
+curl -X POST http://127.0.0.1:8765/tabs/open \
   -H 'Content-Type: application/json' \
-  -d '{"url":"https://example.com"}'
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{"url":"https://example.com","focus":false}'
 
-curl http://127.0.0.1:8765/page-content
+curl http://127.0.0.1:8765/snapshot?compact=true \
+  -H "Authorization: Bearer $TOKEN"
 
-curl http://127.0.0.1:8765/screenshot --output screen.png
+curl -X POST http://127.0.0.1:8765/find \
+  -H 'Content-Type: application/json' \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{"by":"text","value":"Sign in"}'
 
 curl -X POST http://127.0.0.1:8765/sessions/fetch \
   -H 'Content-Type: application/json' \
+  -H "Authorization: Bearer $TOKEN" \
   -d '{"tabId":"tab-7","url":"/api/me","method":"GET"}'
 ```
 
@@ -209,6 +284,25 @@ The local API binds to `127.0.0.1:8765`.
 - Windows support is not actively validated
 - Packaging and auto-update flows are still less mature than the core browser
   and API surface
+
+## Contributing Focus
+
+This repo is public because Tandem should be buildable with other OpenClaw
+maintainers and contributors, not only observed from a distance.
+
+Good contribution areas right now:
+
+- OpenClaw workflow polish and skill ergonomics
+- browser API improvements for tabs, snapshots, sessions, and devtools
+- Linux quality and cross-platform testing
+- security review and containment hardening
+- UI polish for the shared human + OpenClaw browsing workflow
+
+If you want the project map first, start with:
+
+- [PROJECT.md](PROJECT.md)
+- [CONTRIBUTING.md](CONTRIBUTING.md)
+- [skill/SKILL.md](skill/SKILL.md)
 
 ## Repository Guide
 

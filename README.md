@@ -48,9 +48,6 @@ With Tandem, OpenClaw gets:
 Tandem and OpenClaw's built-in browser tools are complementary. Use whichever
 fits the task.
 
-For OpenClaw users, the point is not "AI inside a browser". The point is a
-browser that OpenClaw can work with seriously.
-
 ## Status
 
 Tandem is currently a public `developer preview`.
@@ -58,7 +55,7 @@ Tandem is currently a public `developer preview`.
 - primary platform: macOS
 - secondary platform: Linux
 - Windows is not actively validated yet
-- current version: `0.57.9`
+- current version: `0.57.13`
 - current release history: [CHANGELOG.md](CHANGELOG.md)
 
 The repository is intended to be public and usable by contributors, but not
@@ -83,7 +80,6 @@ Tandem is built around collaboration with OpenClaw.
 - the right-side Wingman workflow is designed around OpenClaw as the primary AI runtime
 - the local browser API exists so OpenClaw can inspect, navigate, extract, and automate safely
 - the security model is shaped by the fact that OpenClaw has access to a live browser
-- Tandem is built by an OpenClaw maintainer with OpenClaw as the primary AI runtime
 - the repository may still be useful for general Electron browser experimentation, but the product itself is intentionally OpenClaw-first
 
 ## Typical OpenClaw Workflows
@@ -201,7 +197,7 @@ behavior, you do not need every OpenClaw feature running first.
 
 If you are evaluating Tandem as a product, assume OpenClaw integration is a
 core part of the intended workflow rather than an optional extra. Tandem should
-be understood as a first-party OpenClaw companion browser.
+be understood as a purpose-built OpenClaw companion browser.
 
 ## How OpenClaw Connects To Tandem
 

@@ -10,6 +10,8 @@ human-AI collaboration with OpenClaw.
 
 This repository is a public `developer preview`.
 
+![Tandem Browser — homescreen with OpenClaw sidebar](docs/screenshots/tandem-homescreen-hero.jpg)
+
 The human browses normally. OpenClaw gets a local API on `127.0.0.1:8765` for
 navigation, extraction, automation, and observability. Tandem is not a generic
 "AI browser" shell with OpenClaw added later. It is an OpenClaw-first browser
@@ -51,6 +53,8 @@ fits the task.
 ## Status
 
 Tandem is currently a public `developer preview`.
+
+![Tandem Browser — browsing with OpenClaw](docs/screenshots/tandem-browser-interaction.png)
 
 - primary platform: macOS
 - secondary platform: Linux

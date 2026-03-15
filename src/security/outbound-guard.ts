@@ -10,6 +10,16 @@ const log = createLogger('OutboundGuard');
 const CREDENTIAL_PATTERN = /(?:^|&|"|,\s*")(?:password|passwd|pw|pass|secret|token|api[_-]?key|access[_-]?token|credit[_-]?card|card[_-]?number|cvv|cvc|ssn|social[_-]?security)(?:"|]?\s*[:=])/i;
 
 // Trusted media/binary Content-Types — skip body credential scanning for these
+// Google API domains that make legitimate cross-origin requests (Speech API, Maps, etc.)
+const KNOWN_GOOGLE_API_DOMAINS = new Set([
+  'www.google.com',
+  'speech.googleapis.com',
+  'content-speech.googleapis.com',
+  'apis.google.com',
+  'www.gstatic.com',
+  'ssl.gstatic.com',
+]);
+
 const TRUSTED_OUTBOUND_CONTENT_TYPES = new Set([
   'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml',
   'image/bmp', 'image/tiff', 'image/x-icon', 'image/avif',
@@ -51,6 +61,17 @@ export class OutboundGuard {
         reason: 'invalid-url',
         severity: 'info',
         explanation: 'Allowed because the destination URL could not be parsed for outbound analysis.',
+      });
+    }
+
+    // Allow known Google service endpoints regardless of referrer/trust
+    // (Web Speech API, Google Maps, etc. make cross-origin requests from shell context)
+    if (KNOWN_GOOGLE_API_DOMAINS.has(destDomain)) {
+      return this.finishDecision({
+        action: 'allow',
+        reason: 'known-google-api',
+        severity: 'info',
+        explanation: 'Allowed because the destination is a known Google API endpoint.',
       });
     }
 

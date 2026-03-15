@@ -35,9 +35,13 @@ const TRUSTED_SCRIPT_DOMAINS = new Set([
   'media.licdn.com',
   // GitHub CDN — required for dashboard/feed to load
   'github.githubassets.com',
-  // Google APIs — required for Web Speech API (voice-to-text)
+  // Google APIs & CDN — required for Web Speech API, Gmail, Google services
   'apis.google.com',
   'www.google.com',
+  'www.gstatic.com',
+  'ssl.gstatic.com',
+  'fonts.gstatic.com',
+  'accounts.google.com',
 ]);
 const GATEKEEPER_PENDING_LIMIT = 100;
 const GATEKEEPER_HOLD_TIMEOUT_MS = 4_000;

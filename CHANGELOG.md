@@ -2,6 +2,10 @@
 
 All notable changes to Tandem Browser will be documented in this file.
 
+## [v0.57.15] - 2026-03-15
+
+- fix: add snap.licdn.com and media subdomains to allowlist for linkedin profile images
+
 ## [v0.57.14] - 2026-03-15
 
 - fix: add domain allowlist to network shield to prevent blocking linkedin first-party domains

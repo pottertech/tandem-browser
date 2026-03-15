@@ -477,6 +477,10 @@ export class SecurityManager {
   }
 
   private async handleScriptCriticalDetection(detection: ScriptCriticalDetection): Promise<void> {
+    // Script analysis alone (high entropy, rule matches on minified JS) produces too many false
+    // positives on legitimate news sites and SPAs. Log the anomaly for visibility but do NOT
+    // activate containment — that requires confirmed behavioral evidence (behavior-critical).
+    // Containment on script-analysis alone makes Tandem unusable on the modern web.
     this.gatekeeperWs?.sendAnomaly({
       domain: detection.domain,
       metric: 'script_threat_score',
@@ -485,23 +489,11 @@ export class SecurityManager {
       severity: detection.analysis.severity,
     });
 
-    await this.activateContainment({
-      wcId: detection.wcId,
-      domain: detection.domain,
-      severity: detection.analysis.severity === 'critical' ? 'critical' : 'high',
-      trigger: 'script-critical',
-      reason: `Critical script detection (${detection.source})`,
-      actionSummary: 'The tab was quarantined, future network requests are blocked, and the site was forced into strict mode.',
-      reviewMessage: 'Tandem quarantined this tab after a critical script signal. Review the page, close the tab if it is unexpected, and only reopen the site manually if you trust it.',
-      detection: {
-        source: detection.source,
-        totalScore: detection.analysis.totalScore,
-        scriptUrl: detection.url,
-        matchCount: detection.analysis.matches.length,
-        entropy: detection.analysis.entropy,
-      },
-      terminateExecution: false,
-    });
+    log.warn(
+      `[ScriptGuard] High-signal script detected on ${detection.domain ?? 'unknown'}: ` +
+      `score=${detection.analysis.totalScore}, matches=${detection.analysis.matches.length}, ` +
+      `url=${detection.url?.substring(0, 120) ?? 'unknown'} — logged, no containment`
+    );
   }
 
   private async handleBehaviorCriticalDetection(detection: BehaviorCriticalDetection): Promise<void> {

@@ -938,7 +938,7 @@
               }
             };
 
-            // Request mic permission on macOS before starting
+            // Warm up mic via getUserMedia first (ensures permission is active for Web Speech API)
             const startMic = () => {
               try {
                 micRecognition.start();
@@ -956,19 +956,17 @@
               }
             };
 
-            if (window.tandem?.requestMicPermission) {
-              window.tandem.requestMicPermission().then(result => {
-                if (result && result.granted) {
-                  startMic();
-                } else {
-                  micRecognition = null;
-                  micBtn.title = 'Mic permission denied — allow in System Settings → Privacy → Microphone';
-                  alert('Microphone access denied.\n\nGo to System Settings → Privacy & Security → Microphone and enable Tandem.');
-                }
-              }).catch(() => startMic()); // fallback: try anyway
-            } else {
-              startMic();
-            }
+            navigator.mediaDevices.getUserMedia({ audio: true, video: false })
+              .then(stream => {
+                // Stop immediately — we just needed to trigger the permission
+                stream.getTracks().forEach(t => t.stop());
+                startMic();
+              })
+              .catch(err => {
+                console.error('[mic-btn] Mic permission denied via getUserMedia:', err);
+                micRecognition = null;
+                alert('Microphone access denied.\n\nGo to System Settings → Privacy & Security → Microphone and enable Tandem.');
+              });
           }
         });
       }

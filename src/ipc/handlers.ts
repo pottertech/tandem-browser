@@ -666,7 +666,8 @@ export function registerIpcHandlers(deps: IpcDeps): void {
 
     // Window controls (frameless window on Linux)
   ipcMain.on('panel-open-changed', (_event, data: { open: boolean }) => {
-    panelManager.togglePanel(data.open);
+    // Update internal state only — do NOT send panel-toggle IPC back to avoid feedback loop
+    panelManager.setPanelOpenSilent(data.open);
   });
 
   ipcMain.on('window-minimize', () => {

@@ -253,6 +253,11 @@ export class PanelManager {
     return this.panelOpen;
   }
 
+  /** Update panel open state silently (no IPC back to frontend — avoids feedback loop) */
+  setPanelOpenSilent(open: boolean): void {
+    this.panelOpen = open;
+  }
+
   /** Notify UI about live mode change */
   sendLiveModeChanged(enabled: boolean): void {
     if (this.win && !this.win.isDestroyed() && !this.win.webContents.isDestroyed()) {

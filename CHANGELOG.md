@@ -2,6 +2,10 @@
 
 All notable changes to Tandem Browser will be documented in this file.
 
+## [v0.57.19] - 2026-03-15
+
+- fix: add X-Tab-Id support to snapshot and page-content for background tab access
+
 ## [v0.57.18] - 2026-03-15
 
 - fix: respect X-Tab-Id header in getSessionWC for background tab content access

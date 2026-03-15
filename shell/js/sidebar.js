@@ -281,41 +281,48 @@
 
     function loadWebviewInPanel(id) {
       const content = document.getElementById('sidebar-panel-content');
-      // Use persistent host so webviews are never removed from DOM (preserves login state)
-      const host = document.getElementById('sidebar-webview-host');
 
-      // Hide all webviews
-      webviewCache.forEach(wv => {
-        wv.style.display = 'none';
-        wv.style.pointerEvents = 'none';
-      });
+      // Hide all webviews but keep them in the DOM (preserves login state)
+      webviewCache.forEach(wv => { wv.style.display = 'none'; });
 
       const wv = getOrCreateWebview(id);
       if (!wv) return;
 
-      // Mount in persistent host if not already there
-      if (!host.contains(wv)) {
-        host.appendChild(wv);
+      // Mount in panel-content if not already there — never remove after first mount
+      if (!content.contains(wv)) {
+        content.appendChild(wv);
       }
 
-      // Show this webview and enable pointer events
       wv.style.display = 'flex';
-      wv.style.pointerEvents = 'auto';
-
-      // Make host cover the panel-content area
-      host.style.pointerEvents = 'auto';
       content.classList.add('webview-mode');
     }
 
     function hideWebviews() {
-      const host = document.getElementById('sidebar-webview-host');
-      webviewCache.forEach(wv => {
-        wv.style.display = 'none';
-        wv.style.pointerEvents = 'none';
-      });
-      if (host) host.style.pointerEvents = 'none';
+      webviewCache.forEach(wv => { wv.style.display = 'none'; });
       const content = document.getElementById('sidebar-panel-content');
       if (content) content.classList.remove('webview-mode');
+    }
+
+    // Safe innerHTML setter: moves webviews to a detached fragment first,
+    // sets innerHTML (which would otherwise destroy them), then re-appends.
+    // This prevents Electron from killing webview sessions on DOM wipe.
+    function safeSetPanelHTML(html) {
+      const content = document.getElementById('sidebar-panel-content');
+      if (!content) return;
+      // Detach webviews before innerHTML wipe
+      const detached = [];
+      webviewCache.forEach((wv, id) => {
+        if (content.contains(wv)) {
+          content.removeChild(wv);
+          detached.push({ id, wv });
+        }
+      });
+      content.innerHTML = html;
+      // Re-attach webviews (hidden) so they stay alive
+      detached.forEach(({ wv }) => {
+        wv.style.display = 'none';
+        content.appendChild(wv);
+      });
     }
 
     async function activateItem(id) {
@@ -576,7 +583,7 @@
       content.classList.remove('webview-mode');
 
       // Build panel HTML
-      content.innerHTML = `
+      safeSetPanelHTML(`
         <div class="bookmark-panel">
           <div class="bm-toolbar">
             <div class="bookmark-search-wrap">
@@ -594,7 +601,7 @@
           <div class="bookmark-list" id="bm-list">
             <div class="bm-empty">Loading…</div>
           </div>
-        </div>`;
+        </div>`);
 
       // Fetch bookmarks if not cached
       if (!bmState.all) {
@@ -743,7 +750,7 @@
       hideWebviews();
       content.classList.remove('webview-mode');
 
-      content.innerHTML = `
+      safeSetPanelHTML(`
         <div class="history-panel">
           <div class="history-search-wrap">
             <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/></svg>
@@ -756,7 +763,7 @@
             <div class="history-section-header">Your Devices</div>
             <div id="sync-devices-list"></div>
           </div>
-        </div>`;
+        </div>`);
 
       // Fetch history
       try {
@@ -872,7 +879,7 @@
       content.classList.remove('webview-mode');
       pbState.currentBoardId = null;
 
-      content.innerHTML = `
+      safeSetPanelHTML(`
         <div class="pb-panel">
           <div class="pb-header">
             <span class="pb-title">Pinboards</span>
@@ -881,7 +888,7 @@
           <div class="pb-board-list" id="pb-board-list">
             <div class="bm-empty">Loading...</div>
           </div>
-        </div>`;
+        </div>`);
 
       try {
         const res = await fetch('http://localhost:8765/pinboards', { headers: { Authorization: `Bearer ${TOKEN}` } });
@@ -932,7 +939,7 @@
       pbState.currentBoardEmoji = emoji;
       const content = document.getElementById('sidebar-panel-content');
 
-      content.innerHTML = `
+      safeSetPanelHTML(`
         <div class="pb-panel">
           <div class="pb-items-header" style="position:relative;">
             <button class="pb-back-btn" id="pb-back-btn">&larr;</button>
@@ -950,7 +957,7 @@
           <div class="pb-item-list" id="pb-item-list">
             <div class="bm-empty">Loading...</div>
           </div>
-        </div>`;
+        </div>`);
 
       await pbUpdateBoardSwitcher(boardId);
 
@@ -1445,7 +1452,7 @@
         return `<p class="setup-section-title">${section.title}</p>${itemRows}${sep}`;
       }).join('');
 
-      content.innerHTML = rows;
+      safeSetPanelHTML(rows);
 
       // Toggle handlers
       content.querySelectorAll('input[data-item-id]').forEach(input => {
@@ -1601,7 +1608,7 @@
       const defaultIcon = isEdit ? existingWs.icon : Object.keys(WORKSPACE_ICONS)[0];
       const defaultName = isEdit ? existingWs.name : getNextWorkspaceName();
 
-      content.innerHTML = `
+      safeSetPanelHTML(`
         <div class="ws-form-sheet">
           <div class="ws-form-title">${title}</div>
           <div class="ws-form-section-label">Icon</div>
@@ -1620,7 +1627,7 @@
               <button class="ws-form-btn-danger" id="ws-form-delete-yes">Yes, delete</button>
             </div>
           </div>
-        </div>`;
+        </div>`);
 
       let selectedIcon = defaultIcon;
 
@@ -1768,11 +1775,11 @@
           </div>`;
       }).join('');
 
-      content.innerHTML = `
+      safeSetPanelHTML(`
         <div class="ws-panel">
           <button class="ws-panel-add" id="ws-panel-add-btn">+ Add workspace</button>
           ${rows}
-        </div>`;
+        </div>`);
 
       // Event handlers
       content.querySelector('#ws-panel-add-btn')?.addEventListener('click', () => {

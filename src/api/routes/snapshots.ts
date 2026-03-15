@@ -15,7 +15,16 @@ export function registerSnapshotRoutes(router: Router, ctx: RouteContext): void 
       const selector = req.query.selector as string | undefined;
       const depthStr = req.query.depth as string | undefined;
       const depth = depthStr ? parseInt(depthStr, 10) : undefined;
-      const result = await ctx.snapshotManager.getSnapshot({ interactive, compact, selector, depth });
+
+      // X-Tab-Id support: resolve tab id to webContentsId
+      let wcId: number | undefined;
+      const tabId = req.headers['x-tab-id'] as string | undefined;
+      if (tabId) {
+        const tab = ctx.tabManager.listTabs().find(t => t.id === tabId);
+        wcId = tab?.webContentsId;
+      }
+
+      const result = await ctx.snapshotManager.getSnapshot({ interactive, compact, selector, depth, wcId });
       res.json({ ok: true, snapshot: result.text, count: result.count, url: result.url });
     } catch (e) {
       handleRouteError(res, e);

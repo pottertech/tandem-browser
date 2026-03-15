@@ -67,6 +67,30 @@ export function registerBrowserRoutes(router: Router, ctx: RouteContext): void {
       const maxWait = parseInt(req.query.timeout as string) || 10000;
       const targetLength = parseInt(req.query.minLength as string) || 1000;
 
+      // For background tabs (X-Tab-Id), use a simple synchronous extraction via DevTools
+      // to avoid executeJavaScript hanging on non-active tabs
+      const tabId = req.headers['x-tab-id'] as string | undefined;
+      if (tabId) {
+        const tab = ctx.tabManager.listTabs().find(t => t.id === tabId);
+        if (!tab) { res.status(404).json({ error: `Tab ${tabId} not found` }); return; }
+        const wcId = tab.webContentsId;
+        await ctx.devToolsManager.attachToTab(wcId, { makePrimary: false });
+        const r = await ctx.devToolsManager.sendCommandToTab(wcId, 'Runtime.evaluate', {
+          expression: `(() => {
+            const title = document.title;
+            const url = window.location.href;
+            const meta = document.querySelector('meta[name="description"]');
+            const description = meta ? meta.getAttribute('content') : '';
+            const text = document.body ? document.body.innerText.replace(/\\n{3,}/g, '\\n\\n').trim() : '';
+            return JSON.stringify({ title, url, description, text, length: text.length });
+          })()`,
+          returnByValue: true,
+        });
+        const parsed = JSON.parse(r.result?.value ?? '{}');
+        res.json(parsed);
+        return;
+      }
+
       const content = await execInSessionTab(ctx, req, `
         new Promise((resolve) => {
           const extract = () => {

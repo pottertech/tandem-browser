@@ -77,6 +77,30 @@ export class SnapshotManager {
    * Get an accessibility tree snapshot of the current page.
    */
   async getSnapshot(options: SnapshotOptions): Promise<SnapshotResult> {
+    // If a specific tab is requested, attach DevTools to it and use sendCommandToTab
+    if (options.wcId) {
+      await this.devtools.attachToTab(options.wcId, { makePrimary: false });
+      await this.devtools.sendCommandToTab(options.wcId, 'Accessibility.enable', {});
+      const result = await this.devtools.sendCommandToTab(options.wcId, 'Accessibility.getFullAXTree', {});
+      const rawNodes = (result.nodes || []) as CDPAXNode[];
+      let tree = this.buildTree(rawNodes);
+      if (options.selector) tree = await this.filterBySelector(tree, options.selector);
+      if (options.interactive) tree = this.filterInteractive(tree);
+      if (options.compact) tree = this.filterCompact(tree);
+      if (options.depth !== undefined) tree = this.filterByDepth(tree, options.depth);
+      this.refMap = {};
+      this.refBackendNodeMap.clear();
+      this.refCounter = 0;
+      this.assignRefs(tree);
+      const text = this.formatTree(tree);
+      const count = this.countNodes(tree);
+      // Get URL from the tab
+      const { webContents } = await import('electron');
+      const wc = webContents.fromId(options.wcId);
+      const url = wc?.getURL() ?? '';
+      return { text, count, url };
+    }
+
     // Enable Accessibility domain (idempotent)
     await this.devtools.sendCommand('Accessibility.enable', {});
 

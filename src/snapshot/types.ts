@@ -21,6 +21,7 @@ export interface SnapshotOptions {
   compact?: boolean;      // remove empty structural nodes
   selector?: string;      // scope to CSS selector
   depth?: number;         // max depth
+  wcId?: number;          // target a specific tab by webContentsId (optional)
 }
 
 export interface SnapshotResult {

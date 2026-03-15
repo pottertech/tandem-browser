@@ -2,6 +2,10 @@
 
 All notable changes to Tandem Browser will be documented in this file.
 
+## [v0.57.22] - 2026-03-15
+
+- fix: keep sidebar webviews permanently in DOM to preserve login state across panel switches
+
 ## [v0.57.21] - 2026-03-15
 
 **Security model refinement — daily browsing fixed, real threats still caught**

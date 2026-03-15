@@ -20,6 +20,9 @@ const DOMAIN_ALLOWLIST = new Set([
   'platform.linkedin.com',
   'media.licdn.com',
   'content.linkedin.com',
+  'snap.licdn.com',
+  'media-exp1.licdn.com',
+  'media-exp2.licdn.com',
 ]);
 
 interface BlocklistSnapshot {

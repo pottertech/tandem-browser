@@ -2,6 +2,10 @@
 
 All notable changes to Tandem Browser will be documented in this file.
 
+## [v0.59.5] - 2026-03-15
+
+- fix: add github.githubassets.com to trusted script domains
+
 ## [v0.59.4] - 2026-03-15
 
 - fix: make preview routes public so HTML pages load in browser tabs without Bearer token

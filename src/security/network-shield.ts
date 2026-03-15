@@ -9,6 +9,19 @@ const log = createLogger('NetworkShield');
 const SNAPSHOT_FILE_NAME = 'startup-snapshot.json';
 const SNAPSHOT_VERSION = 1;
 
+// Domains that must never be blocked regardless of blocklist entries.
+// These are legitimate first-party domains that share a parent with tracker subdomains.
+const DOMAIN_ALLOWLIST = new Set([
+  'linkedin.com',
+  'www.linkedin.com',
+  'static.licdn.com',
+  'static-exp1.licdn.com',
+  'static-exp2.licdn.com',
+  'platform.linkedin.com',
+  'media.licdn.com',
+  'content.linkedin.com',
+]);
+
 interface BlocklistSnapshot {
   version: number;
   generatedAt: string;
@@ -103,6 +116,11 @@ export class NetworkShield {
 
   checkDomain(domain: string): { blocked: boolean; reason?: string; source?: string } {
     const lower = domain.toLowerCase();
+
+    // Allowlist check — these domains are never blocked regardless of blocklist entries
+    if (DOMAIN_ALLOWLIST.has(lower)) {
+      return { blocked: false };
+    }
 
     if (this.blockedDomains.has(lower)) {
       return { blocked: true, reason: 'Domain in blocklist', source: 'blocklist_file' };

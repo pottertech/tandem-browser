@@ -7,9 +7,56 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
+    :root {
+      --bg: #1a1a2e;
+      --surface: #16213e;
+      --surface-hover: #1a2744;
+      --text: #eee;
+      --text-dim: #888;
+      --text-muted: #555;
+      --accent: #e94560;
+      --border: #0f3460;
+      --links-title: #6f7692;
+      --links-action-border: #28416d;
+      --links-action-bg: rgba(22, 33, 62, 0.88);
+      --links-action-color: #c8cfdf;
+    }
+
+    [data-theme="light"] {
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --surface-hover: #f1f5f9;
+      --text: #1e293b;
+      --text-dim: #64748b;
+      --text-muted: #94a3b8;
+      --accent: #e94560;
+      --border: rgba(0,0,0,0.08);
+      --links-title: #94a3b8;
+      --links-action-border: rgba(0,0,0,0.12);
+      --links-action-bg: rgba(255,255,255,0.9);
+      --links-action-color: #475569;
+    }
+
+    @media (prefers-color-scheme: light) {
+      [data-theme="system"] {
+        --bg: #f8fafc;
+        --surface: #ffffff;
+        --surface-hover: #f1f5f9;
+        --text: #1e293b;
+        --text-dim: #64748b;
+        --text-muted: #94a3b8;
+        --accent: #e94560;
+        --border: rgba(0,0,0,0.08);
+        --links-title: #94a3b8;
+        --links-action-border: rgba(0,0,0,0.12);
+        --links-action-bg: rgba(255,255,255,0.9);
+        --links-action-color: #475569;
+      }
+    }
+
     body {
-      background: #1a1a2e;
-      color: #eee;
+      background: var(--bg);
+      color: var(--text);
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       display: flex;
       flex-direction: column;
@@ -47,7 +94,7 @@
     .logo span { color: #e94560; }
 
     .subtitle {
-      color: #888;
+      color: var(--text-dim);
       font-size: 14px;
       position: relative;
       z-index: 1;
@@ -65,20 +112,20 @@
       padding: 14px 20px;
       padding-left: 44px;
       font-size: 16px;
-      background: #16213e;
-      border: 1px solid #0f3460;
+      background: var(--surface);
+      border: 1px solid var(--border);
       border-radius: 12px;
-      color: #eee;
+      color: var(--text);
       outline: none;
       transition: border-color 0.2s;
     }
 
     .search-box input:focus {
-      border-color: #e94560;
+      border-color: var(--accent);
     }
 
     .search-box input::placeholder {
-      color: #555;
+      color: var(--text-muted);
     }
 
     .search-icon {
@@ -86,7 +133,7 @@
       left: 14px;
       top: 50%;
       transform: translateY(-50%);
-      color: #555;
+      color: var(--text-muted);
       font-size: 18px;
       pointer-events: none;
     }
@@ -116,15 +163,15 @@
 
     .quick-links-title {
       font-size: 12px;
-      color: #6f7692;
+      color: var(--links-title);
       text-transform: uppercase;
       letter-spacing: 0.12em;
     }
 
     .quick-links-action {
-      border: 1px solid #28416d;
-      background: rgba(22, 33, 62, 0.88);
-      color: #c8cfdf;
+      border: 1px solid var(--links-action-border);
+      background: var(--links-action-bg);
+      color: var(--links-action-color);
       border-radius: 999px;
       padding: 7px 12px;
       font-size: 12px;
@@ -134,8 +181,8 @@
     }
 
     .quick-links-action:hover {
-      color: #fff;
-      border-color: #e94560;
+      color: var(--text);
+      border-color: var(--accent);
       transform: translateY(-1px);
     }
 
@@ -145,18 +192,18 @@
       align-items: center;
       gap: 6px;
       text-decoration: none;
-      color: #aaa;
+      color: var(--text-dim);
       font-size: 11px;
       width: 72px;
       transition: color 0.2s;
     }
 
-    .quick-link:hover { color: #eee; }
+    .quick-link:hover { color: var(--text); }
 
     .quick-link .icon {
       width: 48px;
       height: 48px;
-      background: #16213e;
+      background: var(--surface);
       border-radius: 12px;
       display: flex;
       align-items: center;
@@ -166,7 +213,7 @@
     }
 
     .quick-link:hover .icon {
-      background: #1a2744;
+      background: var(--surface-hover);
     }
 
     .quick-link img {
@@ -191,7 +238,7 @@
     }
 
     .quick-links-empty {
-      color: #666;
+      color: var(--text-muted);
       font-size: 13px;
       padding: 12px 0;
       text-align: center;
@@ -205,7 +252,7 @@
 
     .recent-section h3 {
       font-size: 13px;
-      color: #555;
+      color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 1px;
       margin-bottom: 12px;
@@ -222,15 +269,15 @@
       align-items: center;
       gap: 10px;
       padding: 8px 12px;
-      background: #16213e;
+      background: var(--surface);
       border-radius: 8px;
       text-decoration: none;
-      color: #ccc;
+      color: var(--text-dim);
       font-size: 13px;
       transition: background 0.2s;
     }
 
-    .recent-tab:hover { background: #1a2744; color: #eee; }
+    .recent-tab:hover { background: var(--surface-hover); color: var(--text); }
 
     .recent-tab img {
       width: 16px;
@@ -239,7 +286,7 @@
     }
 
     .recent-tab .url {
-      color: #555;
+      color: var(--text-muted);
       font-size: 11px;
       margin-left: auto;
       max-width: 200px;
@@ -276,7 +323,7 @@
   <div class="recent-section">
     <h3>Recent tabs</h3>
     <div class="recent-tabs" id="recent-tabs">
-      <div style="color: #555; font-size: 13px; padding: 8px;">Loading...</div>
+      <div style="color: var(--text-muted); font-size: 13px; padding: 8px;">Loading...</div>
     </div>
   </div>
 
@@ -470,6 +517,34 @@
 
     loadQuickLinks();
     loadRecentTabs();
+
+    // Theme sync — load from config + listen for changes
+    function applyTheme(theme) {
+      if (theme === 'light') {
+        document.documentElement.setAttribute('data-theme', 'light');
+      } else if (theme === 'system') {
+        document.documentElement.setAttribute('data-theme', 'system');
+      } else {
+        document.documentElement.removeAttribute('data-theme');
+      }
+    }
+
+    async function loadTheme() {
+      try {
+        const res = await fetch(`${API}/config`);
+        if (res.ok) {
+          const config = await res.json();
+          applyTheme(config.appearance?.theme || config.theme || 'dark');
+        }
+      } catch {}
+    }
+
+    loadTheme();
+
+    try {
+      const themeBc = new BroadcastChannel('tandem-theme');
+      themeBc.onmessage = (e) => { if (e.data?.theme) applyTheme(e.data.theme); };
+    } catch {}
   </script>
 </body>
 </html>

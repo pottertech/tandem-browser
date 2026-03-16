@@ -279,14 +279,6 @@
     // Load theme on startup
     setTimeout(loadThemeFromConfig, 100);
 
-    // Listen for theme changes broadcast from settings window (BroadcastChannel works cross-window in Electron)
-    try {
-      const themeBc = new BroadcastChannel('tandem-theme');
-      themeBc.onmessage = (e) => {
-        if (e.data && e.data.theme) applyTheme(e.data.theme);
-      };
-    } catch {}
-
     // ═══════════════════════════════════════════════
     // Password Vault UI Logic
     // ═══════════════════════════════════════════════

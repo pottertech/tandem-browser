@@ -277,6 +277,8 @@ contextBridge.exposeInMainWorld('tandem', {
   // Chrome-style compact title bar: platform detection and window controls
   setPanelOpen: (open: boolean) => ipcRenderer.send('panel-open-changed', { open }),
   requestMicPermission: () => ipcRenderer.invoke('request-mic-permission'),
+  transcribeAudio: (buffer: ArrayBuffer, language?: string) => ipcRenderer.invoke('transcribe-audio', { buffer, language }),
+  getSpeechBackend: () => ipcRenderer.invoke('get-speech-backend'),
   getPlatform: () => process.platform,
   showAppMenu: (x: number, y: number) => ipcRenderer.send('show-app-menu', { x, y }),
   minimizeWindow: () => ipcRenderer.send('window-minimize'),

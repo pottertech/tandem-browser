@@ -862,112 +862,86 @@
       });
       sendBtn.addEventListener('click', sendMessage);
 
-      // ── Mic button — voice to text into chat input ──
+      // ── Mic button — native voice to text (Apple Speech / Whisper) ──
       const micBtn = document.getElementById('chat-mic-btn');
-      let micVoiceActive = false;
-      let micRecognition = null;
+      let micRecording = false;
+      let micMediaRecorder = null;
+      let micChunks = [];
+      let micStream = null;
 
       if (micBtn) {
-        micBtn.addEventListener('click', () => {
-          if (micVoiceActive) {
-            // Stop
-            micVoiceActive = false;
-            if (micRecognition) { try { micRecognition.stop(); } catch { } micRecognition = null; }
+        micBtn.addEventListener('click', async () => {
+          if (micRecording) {
+            // Stop recording → transcribe
+            micRecording = false;
             micBtn.classList.remove('active');
-            micBtn.textContent = '🎤';
+            micBtn.textContent = '⏳';
+            micBtn.title = 'Transcribing...';
+            if (micMediaRecorder && micMediaRecorder.state !== 'inactive') {
+              micMediaRecorder.stop();
+            }
           } else {
-            // Start
-            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SR) { console.warn('Web Speech API not available'); return; }
-            micRecognition = new SR();
-            micRecognition.lang = navigator.language || 'nl-BE';
-            micRecognition.continuous = true;
-            micRecognition.interimResults = true;
+            // Start recording
+            try {
+              micStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+              micChunks = [];
+              micMediaRecorder = new MediaRecorder(micStream, { mimeType: 'audio/webm' });
 
-            micRecognition.onresult = (event) => {
-              let interim = '', final = '';
-              for (let i = event.resultIndex; i < event.results.length; i++) {
-                const t = event.results[i][0].transcript;
-                if (event.results[i].isFinal) final += t;
-                else interim += t;
-              }
-              // Append final text to input, show interim as placeholder hint
-              if (final) {
-                const current = inputEl.value.trim();
-                inputEl.value = current ? current + ' ' + final.trim() : final.trim();
-                inputEl.dispatchEvent(new Event('input'));
-                inputEl.style.height = '';
-                inputEl.style.height = Math.min(inputEl.scrollHeight, 80) + 'px';
-              }
-              micBtn.title = interim || 'Listening...';
-            };
+              micMediaRecorder.ondataavailable = (e) => {
+                if (e.data.size > 0) micChunks.push(e.data);
+              };
 
-            micRecognition.onerror = (e) => {
-              console.warn('[mic-btn] SpeechRecognition error:', e.error);
-              if (e.error === 'not-allowed') {
-                // Microphone permission denied
-                micVoiceActive = false;
-                if (micRecognition) { try { micRecognition.stop(); } catch { } micRecognition = null; }
-                micBtn.classList.remove('active');
-                micBtn.textContent = '🎤';
-                micBtn.title = 'Mic permission denied — allow in system settings';
-                alert('Microphone access denied.\n\nGo to System Settings → Privacy & Security → Microphone and enable Tandem.');
-              } else if (e.error !== 'no-speech' && e.error !== 'aborted') {
-                micVoiceActive = false;
-                if (micRecognition) { try { micRecognition.stop(); } catch { } micRecognition = null; }
-                micBtn.classList.remove('active');
+              micMediaRecorder.onstop = async () => {
+                // Stop mic stream
+                if (micStream) { micStream.getTracks().forEach(t => t.stop()); micStream = null; }
+
+                if (micChunks.length === 0) {
+                  micBtn.textContent = '🎤';
+                  micBtn.title = 'Voice input';
+                  return;
+                }
+
+                // Combine chunks → ArrayBuffer
+                const blob = new Blob(micChunks, { type: 'audio/webm' });
+                const arrayBuffer = await blob.arrayBuffer();
+
+                // Send to main process for transcription
+                try {
+                  const result = await window.tandem.transcribeAudio(arrayBuffer, 'nl-BE');
+                  if (result.ok && result.text) {
+                    const current = inputEl.value.trim();
+                    inputEl.value = current ? current + ' ' + result.text.trim() : result.text.trim();
+                    inputEl.dispatchEvent(new Event('input'));
+                    inputEl.style.height = '';
+                    inputEl.style.height = Math.min(inputEl.scrollHeight, 80) + 'px';
+                    inputEl.focus();
+                  } else {
+                    console.warn('[mic-btn] Transcription failed:', result.error);
+                  }
+                } catch (e) {
+                  console.error('[mic-btn] Transcription error:', e);
+                }
+
                 micBtn.textContent = '🎤';
                 micBtn.title = 'Voice input';
-              }
-            };
+                micMediaRecorder = null;
+                micChunks = [];
+              };
 
-            micRecognition.onend = () => {
-              // Only restart if still active and not intentionally stopped
-              if (micVoiceActive && micRecognition) {
-                setTimeout(() => {
-                  if (micVoiceActive && micRecognition) {
-                    try { micRecognition.start(); } catch (e) {
-                      console.warn('[mic-btn] Failed to restart:', e);
-                      micVoiceActive = false;
-                      micBtn.classList.remove('active');
-                      micBtn.textContent = '🎤';
-                      micBtn.title = 'Voice input';
-                    }
-                  }
-                }, 100);
-              }
-            };
+              micMediaRecorder.start();
+              micRecording = true;
+              micBtn.classList.add('active');
+              micBtn.textContent = '🔴';
+              micBtn.title = 'Recording... (click to stop & transcribe)';
 
-            // Warm up mic via getUserMedia first (ensures permission is active for Web Speech API)
-            const startMic = () => {
-              try {
-                micRecognition.start();
-                micVoiceActive = true;
-                micBtn.classList.add('active');
-                micBtn.textContent = '🔴';
-                micBtn.title = 'Listening... (click to stop)';
-                inputEl.focus();
-              } catch (e) {
-                console.error('[mic-btn] Voice input failed to start:', e);
-                micVoiceActive = false;
-                micRecognition = null;
-                micBtn.classList.remove('active');
-                micBtn.textContent = '🎤';
-              }
-            };
-
-            navigator.mediaDevices.getUserMedia({ audio: true, video: false })
-              .then(stream => {
-                // Start SpeechRecognition FIRST, then stop the warmup stream
-                // (stopping before start causes not-allowed error in some Electron builds)
-                startMic();
-                setTimeout(() => stream.getTracks().forEach(t => t.stop()), 500);
-              })
-              .catch(err => {
-                console.error('[mic-btn] Mic permission denied via getUserMedia:', err);
-                micRecognition = null;
+            } catch (err) {
+              console.error('[mic-btn] Failed to start recording:', err);
+              micBtn.textContent = '🎤';
+              micBtn.title = 'Voice input';
+              if (err.name === 'NotAllowedError') {
                 alert('Microphone access denied.\n\nGo to System Settings → Privacy & Security → Microphone and enable Tandem.');
-              });
+              }
+            }
           }
         });
       }

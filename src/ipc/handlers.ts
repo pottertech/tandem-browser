@@ -255,6 +255,19 @@ export function registerIpcHandlers(deps: IpcDeps): void {
     return result;
   });
 
+  // ═══ Native Speech Transcription (Apple Speech / Whisper) ═══
+  ipcMain.handle('transcribe-audio', async (_event, data: { buffer: ArrayBuffer; language?: string }) => {
+    const { transcribeAudio, detectBackend } = await import('../voice/speech-transcriber');
+    const buffer = Buffer.from(data.buffer);
+    const language = data.language || 'nl-BE';
+    return transcribeAudio(buffer, language);
+  });
+
+  ipcMain.handle('get-speech-backend', async () => {
+    const { detectBackend } = await import('../voice/speech-transcriber');
+    return { backend: detectBackend() };
+  });
+
   // ═══ Microphone Permission Request ═══
   ipcMain.handle('request-mic-permission', async () => {
     if (process.platform !== 'darwin') return { granted: true };

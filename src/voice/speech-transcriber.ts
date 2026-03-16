@@ -87,27 +87,25 @@ function convertToM4a(inputFile: string): Promise<string> {
   });
 }
 
-function transcribeWithApple(audioFile: string, language: string): Promise<{ ok: boolean; text?: string; error?: string }> {
-  return new Promise(async (resolve) => {
-    const binary = getAppleSpeechBinary();
-    // Map nl-BE to nl-NL for Apple (nl-BE not always supported)
-    const appleLanguage = language === 'nl-BE' ? 'nl-NL' : language;
+async function transcribeWithApple(audioFile: string, language: string): Promise<{ ok: boolean; text?: string; error?: string }> {
+  const binary = getAppleSpeechBinary();
+  const appleLanguage = language === 'nl-BE' ? 'nl-NL' : language;
 
-    // Convert webm → m4a (Apple Speech doesn't accept webm)
-    let transcribeFile = audioFile;
-    let convertedFile: string | null = null;
-    if (audioFile.endsWith('.webm')) {
-      try {
-        convertedFile = await convertToM4a(audioFile);
-        transcribeFile = convertedFile;
-        log.info(`Converted webm → m4a: ${convertedFile}`);
-      } catch (e) {
-        log.warn('Conversion failed, trying with original file:', e);
-      }
+  // Convert webm → m4a (Apple Speech doesn't accept webm)
+  let transcribeFile = audioFile;
+  let convertedFile: string | null = null;
+  if (audioFile.endsWith('.webm')) {
+    try {
+      convertedFile = await convertToM4a(audioFile);
+      transcribeFile = convertedFile;
+      log.info(`Converted webm → m4a: ${convertedFile}`);
+    } catch (e) {
+      log.warn('Conversion failed, trying with original file:', e);
     }
+  }
 
+  return new Promise((resolve) => {
     execFile(binary, [transcribeFile, appleLanguage], { timeout: 30_000 }, (err, stdout, stderr) => {
-      // Cleanup converted file
       if (convertedFile) try { fs.unlinkSync(convertedFile); } catch { /* ignore */ }
 
       if (err) {

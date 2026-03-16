@@ -257,7 +257,7 @@ export function registerIpcHandlers(deps: IpcDeps): void {
 
   // ═══ Native Speech Transcription (Apple Speech / Whisper) ═══
   ipcMain.handle('transcribe-audio', async (_event, data: { buffer: ArrayBuffer; language?: string }) => {
-    const { transcribeAudio, detectBackend } = await import('../voice/speech-transcriber');
+    const { transcribeAudio } = await import('../voice/speech-transcriber');
     const buffer = Buffer.from(data.buffer);
     const language = data.language || 'nl-BE';
     return transcribeAudio(buffer, language);

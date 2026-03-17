@@ -1,4 +1,5 @@
 import type { Router, Request, Response } from 'express';
+import { rateLimit as expressRateLimit } from 'express-rate-limit';
 import path from 'path';
 import os from 'os';
 import fs from 'fs';
@@ -10,6 +11,21 @@ import { buildOpenClawConnectParams, readOpenClawGatewayToken } from '../../open
 import { createRateLimitMiddleware } from '../rate-limit';
 
 const log = createLogger('DataRoutes');
+const openClawTokenRateLimit = expressRateLimit({
+  windowMs: 60_000,
+  limit: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many OpenClaw token requests. Retry shortly.' },
+});
+
+const openClawConnectRateLimit = expressRateLimit({
+  windowMs: 60_000,
+  limit: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many OpenClaw connect requests. Retry shortly.' },
+});
 
 export function registerDataRoutes(router: Router, ctx: RouteContext): void {
   // ═══════════════════════════════════════════════
@@ -183,12 +199,7 @@ export function registerDataRoutes(router: Router, ctx: RouteContext): void {
     }
   });
 
-  router.get('/config/openclaw-token', createRateLimitMiddleware({
-    bucket: 'data-openclaw-token',
-    windowMs: 60_000,
-    max: 10,
-    message: 'Too many OpenClaw token requests. Retry shortly.',
-  }), (_req: Request, res: Response) => {
+  router.get('/config/openclaw-token', openClawTokenRateLimit, (_req: Request, res: Response) => {
     try {
       const openclawPath = path.join(os.homedir(), '.openclaw', 'openclaw.json');
       if (!fs.existsSync(openclawPath)) {
@@ -206,12 +217,7 @@ export function registerDataRoutes(router: Router, ctx: RouteContext): void {
     }
   });
 
-  router.get('/config/openclaw-connect', createRateLimitMiddleware({
-    bucket: 'data-openclaw-connect',
-    windowMs: 60_000,
-    max: 30,
-    message: 'Too many OpenClaw connect requests. Retry shortly.',
-  }), (req: Request, res: Response) => {
+  router.get('/config/openclaw-connect', openClawConnectRateLimit, (req: Request, res: Response) => {
     try {
       const nonce = typeof req.query.nonce === 'string' ? req.query.nonce.trim() : '';
       if (!nonce) {

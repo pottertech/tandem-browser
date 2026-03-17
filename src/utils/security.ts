@@ -1,4 +1,5 @@
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 
 const HTML_ESCAPE_RE = /[&<>"']/g;
@@ -159,6 +160,7 @@ export function normalizeExistingDirectoryPath(value: string, label: string): st
   }
 
   const resolved = path.resolve(trimmed);
+  assertPathWithinRoot(os.homedir(), resolved);
   const stat = fs.statSync(resolved);
   if (!stat.isDirectory()) {
     throw new Error(`${label} must be a directory`);

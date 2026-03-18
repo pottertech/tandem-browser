@@ -2,6 +2,10 @@
 
 All notable changes to Tandem Browser will be documented in this file.
 
+## [v0.62.17] - 2026-03-18
+
+- fix: update default quick links — remove personal/ClaroNote links, add Robin's public profiles
+
 ## [v0.62.16] - 2026-03-17
 
 - fix: satisfy CodeQL rate limit detection (api)

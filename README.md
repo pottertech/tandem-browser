@@ -69,7 +69,7 @@ This repository is a public `developer preview` — real project, early public s
 - primary platform: macOS
 - secondary platform: Linux
 - Windows is not actively validated yet
-- current version: `0.62.16`
+- current version: see [package.json](package.json)
 - current release history: [CHANGELOG.md](CHANGELOG.md)
 - official release format today: source code only
 - official binaries: not published yet

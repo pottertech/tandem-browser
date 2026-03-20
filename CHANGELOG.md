@@ -2,6 +2,10 @@
 
 All notable changes to Tandem Browser will be documented in this file.
 
+## [v0.63.3] - 2026-03-20
+
+- fix: resolve CI test failures — safe app.getVersion(), update quickLinks count in tests
+
 ## [v0.63.2] - 2026-03-20
 
 - fix: remove unused imports in app-menu, fix eslint any in overlay

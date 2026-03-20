@@ -55,7 +55,7 @@ export function registerMiscRoutes(router: Router, ctx: RouteContext): void {
         loading: wc ? wc.isLoading() : false,
         activeTab: tab.id,
         tabs: ctx.tabManager.count,
-        version: app.getVersion(),
+        version: (() => { try { return app.getVersion(); } catch { return undefined; } })(),
         viewport,
       });
     } catch (e) {
